@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "168944673103",
+    "project_id": "stok-satis-takips",
+    "storage_bucket": "stok-satis-takips.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:168944673103:android:430e6bcfcbe193cd36653a",
+        "android_client_info": {
+          "package_name": "com.cilginpenguen.stok_satis_firebase"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDEHa5JvxifYkyGcQDm8avDjTpUr2LOJSs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
