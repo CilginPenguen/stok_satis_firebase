@@ -223,7 +223,6 @@ class ProductController extends BaseController {
   void onInit() {
     super.onInit();
     urunleriGetir();
-    Get.lazyPut(() => ProductController());
   }
 
   Future<void> urunleriGetir() async {
@@ -355,7 +354,6 @@ class ProductController extends BaseController {
         .update(urun.toMap());
 
     Get.back();
-    showSuccessSnackbar(message: "Ürün başarıyla güncellendi");
   }
 
   List<Urunler> get filtreliListe {

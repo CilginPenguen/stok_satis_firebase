@@ -75,6 +75,8 @@ class HistoryController extends BaseController {
   /// 🔹 Tek kaydı sil
   Future<void> deleteSale(Gecmis item) async {
     final ownerUid = await bringOwnerUid();
+    final l = Get.find<ProductController>();
+    await l.urunleriGetir();
     try {
       if (ownerUid != "") {
         await alertDiyalog(

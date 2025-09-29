@@ -69,7 +69,10 @@ class BottomBar extends GetView<BasketController> {
                     if (controller.basketList.isNotEmpty) {
                       bool result = await controller.sepetiOnayla();
                       if (result) {
-                        Get.offNamed(AppRoutes.home);
+                        Get.offNamedUntil(
+                          AppRoutes.home,
+                          (route) => route.settings.name == AppRoutes.home,
+                        );
                       }
                     }
                   },

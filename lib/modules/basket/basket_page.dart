@@ -207,7 +207,8 @@ class BasketPage extends GetView<BasketController> {
                         onPressed: () async {
                           bool sonuc = await controller.sepetiOnayla();
                           if (sonuc) {
-                            Get.offAllNamed(AppRoutes.auth);
+                            Get.back(canPop: true);
+
                             controller.showSuccessSnackbar(
                               message: "Alışveriş Tamamlandı",
                             );
