@@ -47,6 +47,7 @@ class ApproveStaff extends GetView<ProfilePageController> {
                             onPressed: () async => controller.updateApproval(
                               uid: approve.staffUid,
                               approveStatus: false,
+                              forDelete: true,
                             ),
                             icon: Icon(
                               Icons.cancel_outlined,
@@ -57,6 +58,7 @@ class ApproveStaff extends GetView<ProfilePageController> {
                             onPressed: () async => controller.updateApproval(
                               uid: approve.staffUid,
                               approveStatus: true,
+                              forDelete: false,
                             ),
                             icon: Icon(Icons.done, color: Colors.green),
                           ),

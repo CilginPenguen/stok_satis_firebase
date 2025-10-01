@@ -55,10 +55,10 @@ class SignupController extends BaseController {
       }
       if (query.docs.isNotEmpty) {
         final existingStaffDoc = query.docs.first;
-
+        debugPrint(uidController.text);
         // StorageService'e yaz
-        await storage.setValue("staffUid", existingStaffDoc.id);
-        await storage.setValue("ownerUid", uidController.text.trim());
+        await storage.setValue<String>("staffUid", existingStaffDoc.id);
+        await storage.setValue<String>("ownerUid", uidController.text.trim());
         Get.offAllNamed(AppRoutes.auth);
 
         return;
@@ -86,7 +86,6 @@ class SignupController extends BaseController {
           .collection("staff")
           .doc(staffUid)
           .set(staff.toMap());
-      clearForm();
 
       print("Staff UID: $staffUid (${staffUid.runtimeType})");
       print(
@@ -107,6 +106,7 @@ class SignupController extends BaseController {
       if (!staffSaved || !ownerSaved) {
         print("SharedPreferences'e veri eklenirken sorun oluştu.");
       }
+      clearForm();
       Get.offAllNamed(AppRoutes.auth);
     } catch (e, s) {
       print("personalSignUp sırasında hata oluştu: $e");

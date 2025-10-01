@@ -30,8 +30,18 @@ class StaffExpansiontile extends GetView<ProfilePageController> {
                     key: ValueKey(staff.staffUid),
                     direction: DismissDirection.endToStart,
                     confirmDismiss: (direction) async {
+                      await controller.deletePersonalDialog(
+                        isim: "${staff.firstName} ${staff.lastName}",
+                        id: staff.staffUid ?? "",
+                      );
                       return null;
                     },
+                    background: Container(
+                      color: Colors.red,
+                      alignment: Alignment.centerRight,
+                      padding: EdgeInsets.only(left: 20),
+                      child: Icon(Icons.delete, color: Colors.white),
+                    ),
                     child: ExpansionTile(
                       key: ValueKey(staff.staffUid),
                       title: Text("${staff.firstName} ${staff.lastName}"),
@@ -79,6 +89,17 @@ class StaffExpansiontile extends GetView<ProfilePageController> {
                                     uid: staff.staffUid ?? "",
                                     permission: "deleteProduct",
                                     value: val ?? false,
+                                  );
+                                },
+                              ),
+                              _permissionCheckbox(
+                                "Uygulamaya Girebilir",
+                                staff.deviceApproval.approved ?? false,
+                                (val) {
+                                  controller.updateApproval(
+                                    uid: staff.staffUid ?? "",
+                                    approveStatus: val ?? false,
+                                    forDelete: false,
                                   );
                                 },
                               ),

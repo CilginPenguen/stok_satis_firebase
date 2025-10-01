@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import '../core/base_controller.dart';
+import '../modules/Auth/auth_controller.dart';
 import '../modules/dashboard/dashboard_controller.dart';
 import '../modules/history/history_controller.dart';
 import '../modules/home/home_controller.dart';
@@ -25,6 +26,7 @@ class AppBindings extends Bindings {
     Get.lazyPut(() => HistoryController(), fenix: true);
     Get.lazyPut(() => DashboardController(), fenix: true);
     Get.lazyPut(() => ProductController(), fenix: true);
+    Get.lazyPut(() => AuthController(), fenix: true);
     Get.put(ClockService(), permanent: true);
   }
 }

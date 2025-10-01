@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:stok_satis_firebase/modules/products/product_controller.dart';
 import 'package:stok_satis_firebase/modules/products/widgets/Product/mevcut_sayfa.dart';
 
 import '../../core/base_controller.dart';

@@ -8,7 +8,7 @@ class RejectedPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Kayıt Reddedildi")),
+      appBar: AppBar(title: const Text("Giriş Reddedildi")),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -16,7 +16,7 @@ class RejectedPage extends StatelessWidget {
             const Icon(Icons.cancel, color: Colors.red, size: 80),
             const SizedBox(height: 20),
             const Text(
-              "Kaydınız dükkan sahibi tarafından reddedildi.",
+              "Girişiniz dükkan sahibi tarafından reddedildi.",
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 18),
             ),

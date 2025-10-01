@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:stok_satis_firebase/core/base_controller.dart';
 import 'package:stok_satis_firebase/models/owner.dart';
@@ -129,6 +128,7 @@ class ProfilePageController extends BaseController {
   Future<void> updateApproval({
     required String? uid,
     required bool approveStatus,
+    required bool forDelete,
   }) async {
     try {
       String ownerUid = await bringOwnerUid();
@@ -139,51 +139,51 @@ class ProfilePageController extends BaseController {
           .doc(uid)
           .update({"deviceApproval.approved": approveStatus});
       if (!approveStatus) {
-        Future.delayed(const Duration(seconds: 10), () async {
-          await db
-              .collection("users")
-              .doc(ownerUid)
-              .collection("staff")
-              .doc(uid)
-              .delete();
-        });
+        if (forDelete) {
+          Future.delayed(const Duration(seconds: 10), () async {
+            await db
+                .collection("users")
+                .doc(ownerUid)
+                .collection("staff")
+                .doc(uid)
+                .delete();
+            showSuccessSnackbar(message: "Personel Silindi");
+          });
+        }
       }
     } on Exception catch (e) {
       showErrorSnackbar(message: "Hata ${e.toString()}");
     }
   }
 
-  Future<void> deletePersonal({
+  Future<void> deletePersonalDialog({
     required String isim,
     required String id,
   }) async {
-    String ownerUid = uidGetir();
     diyalog(
       Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Card(
-            child: ListTile(
-              title: Text("Silmek İstiyor Musunuz?"),
-              subtitle: Text(isim),
-            ),
+          ListTile(
+            title: Text("Silmek İstiyor Musunuz?"),
+            subtitle: Text(isim),
           ),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextButton.icon(
+              OutlinedButton.icon(
                 onPressed: () => Get.back(result: false),
                 label: Text("Hayır"),
                 icon: Icon(Icons.cancel_outlined, color: Colors.green),
               ),
-              TextButton.icon(
+              OutlinedButton.icon(
                 onPressed: () async {
-                  await db
-                      .collection("users")
-                      .doc(ownerUid)
-                      .collection("staff")
-                      .doc(id)
-                      .delete();
-                  Get.back(result: true);
+                  await updateApproval(
+                    uid: id,
+                    approveStatus: false,
+                    forDelete: true,
+                  );
+                  Get.back();
                 },
                 label: Text("Evet"),
                 icon: Icon(Icons.delete, color: Colors.red),

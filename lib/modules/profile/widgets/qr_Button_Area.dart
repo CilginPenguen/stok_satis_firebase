@@ -18,7 +18,10 @@ class QrButtonArea extends GetView<ProfilePageController> {
         return controller.qr.value
             ? Column(
                 children: [
-                  SizedBox(height: 200, width: 200, child: QrWidget()),
+                  Container(
+                    color: Colors.white,
+                    child: SizedBox(height: 200, width: 200, child: QrWidget()),
+                  ),
                   TextButton.icon(
                     onPressed: () => controller.qr.value = !controller.qr.value,
                     icon: !controller.qr.value
