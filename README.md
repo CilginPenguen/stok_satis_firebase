@@ -56,7 +56,7 @@ lib/
 ---
 
 ## 📸 Ekran Görüntüleri
-> Buraya proje ekran görüntüleri ekleyebilirsin. Örn: `assets/screenshots/home.png`
+
 
 ---
 
