@@ -88,6 +88,3 @@ lib/
 4. Pull request gönder  
 
 ---
-
-## 📄 Lisans
-MIT Lisansı ile lisanslanmıştır. Daha fazla bilgi için [LICENSE](LICENSE) dosyasına bakınız.  
