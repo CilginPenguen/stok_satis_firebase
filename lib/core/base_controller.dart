@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:stok_satis_firebase/modules/signup_temp/personal/personal_can_login.dart';
 import 'package:stok_satis_firebase/routes/app_pages.dart';
 import 'package:stok_satis_firebase/services/storage_service.dart';
 
@@ -155,7 +156,11 @@ class BaseController extends GetxController {
 
           // Cihaz eşleşiyorsa approved durumuna göre yönlendir
           if (deviceApproval.approved == true) {
-            return const HomePage();
+            if (deviceApproval.canLogin == true) {
+              return const HomePage();
+            } else {
+              return PersonalCanLogin();
+            }
           } else if (deviceApproval.approved == false) {
             storageClean();
             return const RejectedPage();

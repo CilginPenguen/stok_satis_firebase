@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/state_manager.dart';
 
 import '../../../services/clock_service.dart';
 import '../../../services/theme_service.dart';

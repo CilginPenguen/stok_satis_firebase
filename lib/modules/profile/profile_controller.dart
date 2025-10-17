@@ -137,7 +137,10 @@ class ProfilePageController extends BaseController {
           .doc(ownerUid)
           .collection("staff")
           .doc(uid)
-          .update({"deviceApproval.approved": approveStatus});
+          .update({
+            "deviceApproval.approved": approveStatus,
+            "deviceApproval.canLogin": approveStatus,
+          });
       if (!approveStatus) {
         if (forDelete) {
           Future.delayed(const Duration(seconds: 10), () async {
@@ -153,6 +156,24 @@ class ProfilePageController extends BaseController {
       }
     } on Exception catch (e) {
       showErrorSnackbar(message: "Hata ${e.toString()}");
+    }
+  }
+
+  Future<void> updateCanLogin({
+    required String? uid,
+    required bool canLogin,
+    required,
+  }) async {
+    try {
+      String ownerUid = await bringOwnerUid();
+      await db
+          .collection("users")
+          .doc(ownerUid)
+          .collection("staff")
+          .doc(uid)
+          .update({"deviceApproval.canLogin": canLogin});
+    } catch (e) {
+      showErrorSnackbar(message: "hata: $e");
     }
   }
 

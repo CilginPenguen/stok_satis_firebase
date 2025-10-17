@@ -94,12 +94,12 @@ class StaffExpansiontile extends GetView<ProfilePageController> {
                               ),
                               _permissionCheckbox(
                                 "Uygulamaya Girebilir",
-                                staff.deviceApproval.approved ?? false,
+                                staff.deviceApproval.canLogin,
                                 (val) {
-                                  controller.updateApproval(
+                                  print(staff.deviceApproval.canLogin);
+                                  controller.updateCanLogin(
                                     uid: staff.staffUid ?? "",
-                                    approveStatus: val ?? false,
-                                    forDelete: false,
+                                    canLogin: val ?? false,
                                   );
                                 },
                               ),
