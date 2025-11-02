@@ -16,15 +16,13 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'dart:io';
 
 class BaseController extends GetxController {
+  final storage = Get.find<StorageService>();
+  final auth = FirebaseAuth.instance;
+  final db = FirebaseFirestore.instance;
   Future<void> storageClean() async {
-    final storage = Get.find<StorageService>();
     storage.remove("ownerUid");
     storage.remove("staffUid");
   }
-
-  final ssc = Get.find<StorageService>();
-  final auth = FirebaseAuth.instance;
-  final db = FirebaseFirestore.instance;
 
   Future<void> alertDiyalog({
     required String title,
@@ -232,14 +230,49 @@ class BaseController extends GetxController {
     }
   }
 
+  Future<String> bringNameAndSurname() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        return user.displayName ?? "Dükkan Sahibi bulunamadı";
+      } else {
+        final ownerUid = storage.getValue<String>("ownerUid");
+        final staffUid = storage.getValue<String>("staffUid");
+        Staff personel;
+        if (ownerUid != null && staffUid != null) {
+          final snap = await FirebaseFirestore.instance
+              .collection("users")
+              .doc(ownerUid)
+              .collection("staff")
+              .doc(staffUid)
+              .get();
+          if (snap.exists) {
+            final data = snap.data();
+            if (data != null) {
+              personel = Staff.fromMap(data, docId: snap.id);
+              return "${personel.name} ${personel.surname}".trim();
+            }
+          } else {
+            return "Personel İsmi Bulunamadı";
+          }
+        }
+      }
+      return "İsim Getirilemedi";
+    } catch (e) {
+      showErrorSnackbar(message: "Hata: $e");
+      return "Hata";
+    }
+  }
+
   Future<String> bringOwnerUid() async {
     final user = auth.currentUser;
-    String bringOwner = (ssc.getValue<String>("ownerUid") ?? user?.uid ?? "");
+    String bringOwner =
+        (storage.getValue<String>("ownerUid") ?? user?.uid ?? "");
     return bringOwner;
   }
 
   Future<String?> bringStaffUid() async {
-    final staffUid = ssc.getValue<String>("staffUid");
+    final staffUid = storage.getValue<String>("staffUid");
     return staffUid;
   }
 }

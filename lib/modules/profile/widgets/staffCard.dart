@@ -13,8 +13,8 @@ class StaffCard extends StatelessWidget {
     return Card(
       child: Column(
         children: [
-          InfoListtile(baslik: "İsim", bilgi: s.firstName),
-          InfoListtile(baslik: "Soyisim", bilgi: s.lastName),
+          InfoListtile(baslik: "İsim", bilgi: s.name),
+          InfoListtile(baslik: "Soyisim", bilgi: s.surname),
           InfoListtile(baslik: "Kayıt Tarihi", bilgi: s.joinedAt.toString()),
           ListTile(
             leading: const Text("Yetkiler -->"),

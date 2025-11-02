@@ -72,8 +72,8 @@ class SignupController extends BaseController {
       );
       final staff = Staff(
         staffUid: staffUid,
-        firstName: emailorNameController.text.trim(),
-        lastName: passwordOrSurnameController.text.trim(),
+        name: emailorNameController.text.trim(),
+        surname: passwordOrSurnameController.text.trim(),
         permissions: Permissions(),
         joinedAt: DateTime.now(),
         deviceApproval: device,
@@ -126,6 +126,7 @@ class SignupController extends BaseController {
           .createUserWithEmailAndPassword(email: email, password: password);
 
       final user = userCredential.user;
+      String dispName = "${ownerName.text} ${ownerSurname.text}".trim();
 
       if (user != null) {
         final owner = Owner(
@@ -135,6 +136,7 @@ class SignupController extends BaseController {
           email: email,
           joinedAt: DateTime.now(),
         );
+        user.updateDisplayName(dispName);
 
         await _db.collection('users').doc(user.uid).set({
           "profil": owner.toMap(),

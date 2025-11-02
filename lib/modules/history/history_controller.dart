@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:stok_satis_firebase/models/satis_ozet.dart';
 
 import '../../core/base_controller.dart';
 import '../../models/gecmis_siparis.dart';
@@ -8,22 +9,56 @@ import '../products/product_controller.dart';
 
 class HistoryController extends BaseController {
   final gecmisList = <Gecmis>[].obs;
+  final satisOzetList = <SatisOzeti>[].obs;
+  final dailyIncome = 0.0.obs;
+  final monthlyIncome = 0.0.obs;
 
   /// Geçmiş verilerini getir
   Future<void> gecmisGetir() async {
     try {
       final ownerUid = await bringOwnerUid();
       if (ownerUid != "") {
+        if (checkOwner()) {
+          db
+              .collection("users")
+              .doc(ownerUid)
+              .collection("gecmis")
+              .snapshots()
+              .listen((snapshot) {
+                final gecmisVeri = snapshot.docs.map((doc) {
+                  return Gecmis.fromMap(doc.data(), docId: doc.id);
+                }).toList();
+                gecmisList.value = gecmisVeri;
+                _updateIncomes();
+              });
+        } else {
+          final isim = await bringNameAndSurname();
+          db
+              .collection("users")
+              .doc(ownerUid)
+              .collection("gecmis")
+              .snapshots()
+              .listen((snapshot) {
+                final gecmisVeri = snapshot.docs
+                    .map((doc) => Gecmis.fromMap(doc.data(), docId: doc.id))
+                    .where((item) => item.satisYapan == isim)
+                    .toList();
+                gecmisList.value = gecmisVeri;
+                _updateIncomes();
+              });
+        }
         db
             .collection("users")
             .doc(ownerUid)
-            .collection("gecmis")
+            .collection("satisOzeti")
             .snapshots()
             .listen((snapshot) {
-              final gecmisVeri = snapshot.docs.map((doc) {
-                return Gecmis.fromMap(doc.data(), docId: doc.id);
+              final satislar = snapshot.docs.map((e) {
+                return SatisOzeti.fromMap(e.data());
               }).toList();
-              gecmisList.value = gecmisVeri;
+              satisOzetList.value = satislar;
+              print(satisOzetList);
+              _updateIncomes();
             });
       }
     } on Exception catch (e) {
@@ -31,21 +66,48 @@ class HistoryController extends BaseController {
     }
   }
 
-  /// Günlük toplam
-  double get dailyIncome {
-    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    return gecmisList
-        .where((e) => e.tarih == today)
-        .fold(0.0, (sum, e) => sum + e.toplam_tutar);
+  void _updateIncomes() {
+    if (gecmisList.isEmpty) {
+      dailyIncome.value = 0.0;
+      monthlyIncome.value = 0.0;
+      return;
+    }
+
+    final today = DateFormat('dd.MM.yyyy').format(DateTime.now());
+    final currentMonth = DateFormat('MM.yyyy').format(DateTime.now());
+
+    double daily = 0.0;
+    double monthly = 0.0;
+
+    for (var e in gecmisList) {
+      final kayitTarihi = e.tarih.split(' ').first;
+
+      final satisOzeti = satisOzetList.firstWhereOrNull(
+        (s) => s.satis_id.toString() == e.satis_id.toString(),
+      );
+
+      double tutar = satisOzeti != null
+          ? (satisOzeti.alinanTutar == satisOzeti.toplamTutar
+                ? satisOzeti.toplamTutar
+                : satisOzeti.alinanTutar)
+          : e.toplam_tutar;
+
+      if (kayitTarihi == today) daily += tutar;
+      if (kayitTarihi.endsWith(currentMonth)) monthly += tutar;
+    }
+
+    dailyIncome.value = daily;
+    monthlyIncome.value = monthly;
   }
 
-  /// Aylık toplam
-  double get monthlyIncome {
-    final now = DateTime.now();
-    final currentMonth = DateFormat('yyyy-MM').format(now);
-    return gecmisList
-        .where((e) => e.tarih.startsWith(currentMonth))
-        .fold(0.0, (sum, e) => sum + e.toplam_tutar);
+  String getSellerName(List<Gecmis> items) {
+    final sellers = items
+        .map((e) => e.satisYapan)
+        .where((e) => e.isNotEmpty)
+        .toSet();
+    if (sellers.isEmpty) return "Bilinmiyor";
+    if (sellers.length == 1) return sellers.first;
+    return sellers.join(", ");
   }
 
   /// Sadece bugünün verisi
@@ -55,21 +117,47 @@ class HistoryController extends BaseController {
   }
 
   /// Tarih bazlı gruplama
-  Map<String, List<Gecmis>> get groupedSalesByDate {
-    final Map<String, List<Gecmis>> grouped = {};
+  // Gün ve saat bazlı gruplama
+  Map<String, Map<String, List<Gecmis>>> get groupedSalesByDayAndHour {
+    final Map<String, Map<String, List<Gecmis>>> grouped = {};
 
     for (var item in gecmisList) {
-      final date = item.tarih; // zaten "yyyy-MM-dd" string geliyor
-      if (!grouped.containsKey(date)) {
-        grouped[date] = [];
-      }
-      grouped[date]!.add(item);
+      // Tarihi DateTime'a çevir
+      final dateTime = DateFormat("dd.MM.yyyy HH:mm").parse(item.tarih);
+
+      // Gün ve saat key'leri
+      final dayKey = DateFormat("dd.MM.yyyy").format(dateTime);
+      final hourKey = DateFormat("HH:mm").format(dateTime);
+
+      // Map oluştur
+      grouped.putIfAbsent(dayKey, () => {});
+      grouped[dayKey]!.putIfAbsent(hourKey, () => []);
+      grouped[dayKey]![hourKey]!.add(item);
     }
 
-    // Tarihleri büyükten küçüğe sırala (yeni tarih en üstte)
-    final sortedKeys = grouped.keys.toList()..sort((a, b) => b.compareTo(a));
+    // Günleri büyükten küçüğe sırala
+    final sortedDays = grouped.keys.toList()
+      ..sort(
+        (a, b) => DateFormat(
+          "dd.MM.yyyy",
+        ).parse(b).compareTo(DateFormat("dd.MM.yyyy").parse(a)),
+      );
 
-    return {for (var key in sortedKeys) key: grouped[key]!};
+    final Map<String, Map<String, List<Gecmis>>> sortedGrouped = {};
+    for (var day in sortedDays) {
+      // Saatleri küçükten büyüğe sırala
+      final hoursMap = grouped[day]!;
+      final sortedHours = hoursMap.keys.toList()
+        ..sort(
+          (a, b) => DateFormat(
+            "HH:mm",
+          ).parse(a).compareTo(DateFormat("HH:mm").parse(b)),
+        );
+
+      sortedGrouped[day] = {for (var h in sortedHours) h: hoursMap[h]!};
+    }
+
+    return sortedGrouped;
   }
 
   /// 🔹 Tek kaydı sil
@@ -118,6 +206,12 @@ class HistoryController extends BaseController {
     } on Exception catch (e) {
       showErrorSnackbar(message: "Geçmişi Silerken Hata Oluştu $e");
     }
+  }
+
+  /// Bugünün saat bazlı satışları
+  Map<String, List<Gecmis>> get todaysGroupedByHour {
+    final todayKey = DateFormat("dd.MM.yyyy").format(DateTime.now());
+    return groupedSalesByDayAndHour[todayKey] ?? {};
   }
 
   ///  Tarihe ait tüm kayıtları sil

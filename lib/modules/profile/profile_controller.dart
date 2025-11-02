@@ -17,10 +17,8 @@ class ProfilePageController extends BaseController {
   final strg = Get.find<StorageService>();
   var personelList = <Staff>[].obs;
   var approvePersonel = <Staff>[].obs;
-  @override
-  final auth = FirebaseAuth.instance;
-  @override
-  final db = FirebaseFirestore.instance;
+  // final auth = FirebaseAuth.instance;
+  // final db = FirebaseFirestore.instance;
 
   @override
   void onInit() {

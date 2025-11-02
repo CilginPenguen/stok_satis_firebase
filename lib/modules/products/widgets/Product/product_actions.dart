@@ -10,16 +10,22 @@ class ProductActions extends GetView<ProductController> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Visibility(
-          visible: Get.isRegistered<BasketController>(),
-          child: IconButton(
+    return Visibility(
+      visible: Get.isRegistered<BasketController>(),
+      child: Row(
+        children: [
+          IconButton(
             onPressed: () => Get.to(BarcodeScanner(mod: 3)),
             icon: const Icon(Icons.barcode_reader),
+            tooltip: "Barkod Okuyucu Aç",
           ),
-        ),
-      ],
+          IconButton(
+            onPressed: () => Get.back(),
+            icon: Icon(Icons.shopping_basket_outlined),
+            tooltip: "Sepete Dön",
+          ),
+        ],
+      ),
     );
   }
 }

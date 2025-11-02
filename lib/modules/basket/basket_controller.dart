@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:intl/intl.dart';
+import 'package:stok_satis_firebase/models/satis_ozet.dart';
 
 import '../../core/base_controller.dart';
 import '../../models/gecmis_siparis.dart';
@@ -12,7 +14,14 @@ import '../products/product_controller.dart';
 class BasketController extends BaseController {
   var basketList = <Sepet>[].obs;
   DateTime anlikTarih = DateTime.now();
-  DateFormat tarihFormati = DateFormat("yyyy-MM-dd");
+  DateFormat tarihFormati = DateFormat("dd.MM.yyyy HH:mm");
+  var manuelDegerEkle = false.obs;
+  final manuelTutar = TextEditingController();
+  var indirimModu = false.obs;
+  var tumu = false.obs;
+  RxDouble toplam = 0.0.obs;
+  RxInt indirimOran = 0.obs;
+  RxString manuelTutarDegeri = ''.obs;
 
   bool sepetKontrol({required String id}) {
     return basketList.any((item) => item.urun_id == id);
@@ -35,10 +44,19 @@ class BasketController extends BaseController {
       var gecmisYenile = Get.find<HistoryController>();
       var proCont = Get.find<ProductController>();
       final ownerUid = await bringOwnerUid();
+      double toplamSatis = 0;
+      String satisId = DateTime.now().millisecondsSinceEpoch.toString();
 
       if (ownerUid != "") {
+        String satan = await bringNameAndSurname();
         for (var i in basketList) {
           double salary = i.urun_fiyat * i.sepet_birim;
+          if (i.indirim > 0) {
+            salary = salary * ((100 - i.indirim) / 100);
+            toplamSatis += salary;
+          } else {
+            toplamSatis += salary;
+          }
           await proCont.alisverisStokGuncelle(
             i.urun_id,
             i.urun_adet - i.sepet_birim,
@@ -54,6 +72,9 @@ class BasketController extends BaseController {
             tarih: tarihFormati.format(anlikTarih),
             urun_barkod: i.urun_barkod,
             marka: i.marka,
+            satisYapan: satan,
+            indirim: i.indirim,
+            satis_id: satisId,
           );
           await db
               .collection("users")
@@ -61,6 +82,24 @@ class BasketController extends BaseController {
               .collection("gecmis")
               .add(gecmis.toMap());
         }
+        double? alinanPara = double.tryParse(manuelTutar.text.trim());
+        if (alinanPara == null || alinanPara <= 0) {
+          alinanPara = toplamSatis;
+        }
+        await db
+            .collection("users")
+            .doc(ownerUid)
+            .collection("satisOzeti")
+            .doc(satisId)
+            .set(
+              SatisOzeti(
+                satis_id: satisId,
+                toplamTutar: toplamSatis,
+                alinanTutar: alinanPara,
+                tarih: tarihFormati.format(anlikTarih),
+              ).toMap(),
+            );
+
         await gecmisYenile.gecmisGetir();
         gecmisYenile.dailyIncome;
         gecmisYenile.monthlyIncome;
@@ -84,6 +123,9 @@ class BasketController extends BaseController {
     if (home.backupBasketList.isNotEmpty) {
       basketList.assignAll(home.backupBasketList);
     }
+    manuelTutar.addListener(() {
+      manuelTutarDegeri.value = manuelTutar.text;
+    });
   }
 
   Future<void> saveBasket() async {
@@ -109,6 +151,209 @@ class BasketController extends BaseController {
             label: Text("Hayır"),
           ),
         ],
+      ),
+    );
+  }
+
+  Future<void> secilenIndirimAyarla() async {
+    RxInt secilenOran = 0.obs;
+    FixedExtentScrollController scrollController = FixedExtentScrollController(
+      initialItem: 0,
+    );
+
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "Lütfen yapmak istediğiniz indirim yüzdesini ayarlayınız.",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+
+              // 0–99 arası kaydırılabilir liste
+              SizedBox(
+                height: 150,
+                child: ListWheelScrollView.useDelegate(
+                  controller: scrollController,
+                  itemExtent: 40,
+                  physics: const FixedExtentScrollPhysics(),
+                  onSelectedItemChanged: (index) {
+                    secilenOran.value = index;
+                  },
+                  childDelegate: ListWheelChildBuilderDelegate(
+                    builder: (context, index) {
+                      if (index < 0 || index > 99) return null;
+                      return Center(
+                        child: Text(
+                          "$index%",
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 10),
+              Obx(
+                () => Text(
+                  "Seçilen: %${secilenOran.value}",
+                  style: const TextStyle(fontSize: 18),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  OutlinedButton(
+                    onPressed: () {
+                      Get.back();
+                      indirimModu.value = F;
+                    }, // iptal
+                    child: const Text("İptal"),
+                  ),
+                  OutlinedButton(
+                    onPressed: () async {
+                      await indirimAyarla(secilenOran.value);
+                      Get.back();
+                    },
+                    child: const Text("Onayla"),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> indirimAyarla(int indirim) async {
+    for (var a in basketList) {
+      if (a.secilme) {
+        a.indirim = indirim;
+        a.secilme = !a.secilme;
+      }
+    }
+    basketList.refresh();
+    toplamHesapla();
+    indirimOran.value = indirim;
+    indirimModu.value = F;
+    tumu.value = F;
+  }
+
+  Future<void> tumuDurum() async {
+    for (var i in basketList) {
+      i.secilme = !i.secilme;
+    }
+    basketList.refresh();
+  }
+
+  double toplamHesapla() {
+    double yeniToplam = 0; // geçici değişken
+    for (var i in basketList) {
+      if (i.indirim > 0) {
+        yeniToplam +=
+            (i.sepet_birim * i.urun_fiyat) * ((100 - i.indirim) / 100);
+      } else {
+        yeniToplam += i.sepet_birim * i.urun_fiyat;
+      }
+    }
+
+    return toplam.value = yeniToplam; // reaktif değişimi burada yap
+  }
+
+  bool hepsiIndirimliMi() {
+    if (basketList.isEmpty) return false;
+
+    final ilkIndirim = basketList.first.indirim;
+    if (basketList.every((b) => b.indirim == 0)) return false;
+
+    final hepsiAyni = basketList.every((a) => a.indirim == ilkIndirim);
+
+    indirimOran.value = hepsiAyni ? ilkIndirim : 0;
+
+    return hepsiAyni;
+  }
+
+  Future<void> elleTutarAyarla() async {
+    final tutarRegex = RegExp(r'^\d{0,5}([.,]\d{0,2})?$');
+
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "Alınan Tutarı Giriniz",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: manuelTutar,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                textAlign: TextAlign.center,
+                decoration: InputDecoration(
+                  hintText: "Örnek: 125.50",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onChanged: (value) {
+                  // 🔹 Hatalı karakter girişini engelle
+                  if (!tutarRegex.hasMatch(value)) {
+                    // Geçersiz karakter girildiyse geri al
+                    manuelTutar.text = value.isNotEmpty
+                        ? value.substring(0, value.length - 1)
+                        : "";
+                    manuelTutar.selection = TextSelection.fromPosition(
+                      TextPosition(offset: manuelTutar.text.length),
+                    );
+                  }
+                },
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  OutlinedButton(
+                    onPressed: () => Get.back(),
+                    child: const Text("İptal"),
+                  ),
+                  OutlinedButton(
+                    onPressed: () {
+                      Get.back();
+                      // 🔹 Değeri formatla
+                      final text = manuelTutar.text.trim().replaceAll(',', '.');
+                      if (text.isNotEmpty) {
+                        double? value = double.tryParse(text);
+                        if (value != null) {
+                          manuelTutar.text = value.toStringAsFixed(2);
+                        }
+                      }
+                    },
+                    child: const Text("Onayla"),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

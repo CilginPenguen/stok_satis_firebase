@@ -31,7 +31,7 @@ class StaffExpansiontile extends GetView<ProfilePageController> {
                     direction: DismissDirection.endToStart,
                     confirmDismiss: (direction) async {
                       await controller.deletePersonalDialog(
-                        isim: "${staff.firstName} ${staff.lastName}",
+                        isim: "${staff.name} ${staff.surname}",
                         id: staff.staffUid ?? "",
                       );
                       return null;
@@ -44,7 +44,7 @@ class StaffExpansiontile extends GetView<ProfilePageController> {
                     ),
                     child: ExpansionTile(
                       key: ValueKey(staff.staffUid),
-                      title: Text("${staff.firstName} ${staff.lastName}"),
+                      title: Text("${staff.name} ${staff.surname}"),
                       subtitle: Text(
                         "Katılım: ${staff.joinedAt.toLocal().toString().split(' ')[0]}",
                       ),

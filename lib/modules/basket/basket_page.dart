@@ -35,22 +35,76 @@ class BasketPage extends GetView<BasketController> {
           ),
           title: const Text("Sepet"),
           actions: [
-            IconButton(
-              onPressed: () {
-                Get.to(() => const ProductByCategoryPage());
-              },
-              icon: const Icon(Icons.add_shopping_cart),
-            ),
-            IconButton(
-              onPressed: () async {
-                if (controller.basketList.isNotEmpty) {
-                  await controller.saveBasket();
-                } else {
-                  Get.back();
-                }
-              },
-              icon: const Icon(Icons.home),
-            ),
+            Obx(() {
+              if (controller.indirimModu.value) {
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      onPressed: () => controller.indirimModu.value = false,
+                      icon: Icon(Icons.cancel, color: Colors.red),
+                    ),
+                    OutlinedButton(
+                      onPressed: () async {
+                        controller.tumu.value = !controller.tumu.value;
+                        await controller.tumuDurum();
+                      },
+                      child: controller.tumu.value
+                          ? Text("Hepsi Iptal")
+                          : Text("Hepsini Seç"),
+                    ),
+                    OutlinedButton(
+                      onPressed: () async {
+                        await controller.secilenIndirimAyarla();
+                      },
+                      child: const Text("İndirim Ayarla"),
+                    ),
+                  ],
+                );
+              } else {
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Visibility(
+                      visible: controller.basketList.isNotEmpty,
+                      child: IconButton(
+                        onPressed: () {
+                          controller.elleTutarAyarla();
+                          print(controller.manuelTutarDegeri);
+                        },
+                        tooltip: "Alınan Tutarı Gir",
+                        icon: const Icon(Icons.payments_outlined),
+                      ),
+                    ),
+                    Visibility(
+                      visible: controller.basketList.isNotEmpty,
+                      child: IconButton(
+                        onPressed: () {
+                          controller.indirimModu.value = true;
+                        },
+                        icon: const Icon(Icons.percent),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        Get.to(() => const ProductByCategoryPage());
+                      },
+                      icon: const Icon(Icons.add_shopping_cart),
+                    ),
+                    IconButton(
+                      onPressed: () async {
+                        if (controller.basketList.isNotEmpty) {
+                          await controller.saveBasket();
+                        } else {
+                          Get.back();
+                        }
+                      },
+                      icon: const Icon(Icons.home),
+                    ),
+                  ],
+                );
+              }
+            }),
           ],
         ),
         body: Obx(() {
@@ -88,14 +142,18 @@ class BasketPage extends GetView<BasketController> {
                               Text("Açıklama: ${sepet.urun_description}"),
                               const SizedBox(height: 8),
                               Text(
-                                "Fiyat : $urunToplamFiyat ₺",
+                                sepet.indirim > 0
+                                    ? "Fiyat:${(urunToplamFiyat * ((100 - sepet.indirim) / 100)).toStringAsFixed(2)} "
+                                    : "Fiyat: $urunToplamFiyat ₺",
                                 style: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               Text(
-                                'Birim Fiyatı: ${sepet.urun_fiyat} ₺',
+                                sepet.indirim > 0
+                                    ? "Fiyat:${(sepet.urun_fiyat * ((100 - sepet.indirim) / 100)).toStringAsFixed(2)} "
+                                    : "Fiyat: ${sepet.urun_fiyat} ₺",
                                 style: const TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
@@ -104,42 +162,73 @@ class BasketPage extends GetView<BasketController> {
                             ],
                           ),
                         ),
-                        Row(
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            IconButton(
-                              onPressed: () {
-                                if (controller.basketList[index].sepet_birim >
-                                    1) {
-                                  controller.basketList[index].sepet_birim--;
-                                  controller.basketList.refresh();
-                                }
-                              },
-                              icon: const Icon(Icons.remove),
-                            ),
-                            Column(
+                            Row(
                               children: [
-                                Text("Adet: ${sepet.sepet_birim}"),
-                                Text("Stok: ${sepet.urun_adet}"),
+                                IconButton(
+                                  onPressed: () {
+                                    if (controller
+                                            .basketList[index]
+                                            .sepet_birim >
+                                        1) {
+                                      controller
+                                          .basketList[index]
+                                          .sepet_birim--;
+                                      controller.basketList.refresh();
+                                    }
+                                  },
+                                  icon: const Icon(Icons.remove),
+                                ),
+                                Column(
+                                  children: [
+                                    Text("Adet: ${sepet.sepet_birim}"),
+                                    Text("Stok: ${sepet.urun_adet}"),
+                                  ],
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    if (controller
+                                            .basketList[index]
+                                            .sepet_birim <
+                                        controller
+                                            .basketList[index]
+                                            .urun_adet) {
+                                      controller
+                                          .basketList[index]
+                                          .sepet_birim++;
+                                      controller.basketList.refresh();
+                                    }
+                                  },
+                                  icon: const Icon(Icons.add),
+                                ),
                               ],
                             ),
-                            IconButton(
-                              onPressed: () {
-                                if (controller.basketList[index].sepet_birim <
-                                    controller.basketList[index].urun_adet) {
-                                  controller.basketList[index].sepet_birim++;
-                                  controller.basketList.refresh();
-                                }
-                              },
-                              icon: const Icon(Icons.add),
+                            Visibility(
+                              visible: sepet.indirim > 0,
+                              child: Text("İndirim: %${sepet.indirim}"),
                             ),
                           ],
                         ),
-                        IconButton(
-                          onPressed: () {
-                            controller.basketList.removeAt(index);
-                          },
-                          icon: const Icon(Icons.delete),
-                        ),
+                        Obx(() {
+                          return controller.indirimModu.value
+                              ? Checkbox(
+                                  value: sepet.secilme,
+                                  onChanged: (value) {
+                                    sepet.secilme = value!;
+                                    controller.basketList
+                                        .refresh(); // listeyi refresh et ki UI güncellensin
+                                  },
+                                )
+                              : IconButton(
+                                  onPressed: () {
+                                    controller.basketList.removeAt(index);
+                                  },
+                                  icon: const Icon(Icons.delete),
+                                );
+                        }),
                       ],
                     ),
                   ),
@@ -149,72 +238,88 @@ class BasketPage extends GetView<BasketController> {
           }
         }),
         bottomNavigationBar: Obx(
-          () => Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(
-              color: AppColors.darkTiffanyBlue,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withAlpha(125),
-                  blurRadius: 10,
-                  offset: const Offset(0, -3),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      "Toplam",
-                      style: TextStyle(fontSize: 12, color: Colors.white),
-                    ),
-                    Text(
-                      "${controller.basketList.fold<double>(0, (sum, item) => sum + (item.urun_fiyat * item.sepet_birim)).toStringAsFixed(2)} ₺",
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+          () => SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Container(
+              width: MediaQuery.of(context).size.width,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: AppColors.darkTiffanyBlue,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(125),
+                    blurRadius: 10,
+                    offset: const Offset(0, -3),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        "Toplam",
+                        style: TextStyle(fontSize: 12, color: Colors.white),
                       ),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    OutlinedButton.icon(
-                      onPressed: () => Get.to(BarcodeScanner(mod: 3)),
-                      icon: const Icon(Icons.barcode_reader, size: 20),
-                      label: const Text("Ekle"),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.black,
-                        side: const BorderSide(color: Colors.black54),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 10,
+                      Text(
+                        "${controller.toplamHesapla().toStringAsFixed(2)} ₺",
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ),
-                    SizedBox(width: 5),
-                    Visibility(
-                      visible: (controller.basketList.isNotEmpty),
-                      child: OutlinedButton.icon(
-                        onPressed: () async {
-                          bool sonuc = await controller.sepetiOnayla();
-                          if (sonuc) {
-                            Get.back(canPop: true);
+                    ],
+                  ),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Visibility(
+                        visible: controller.hepsiIndirimliMi(),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text(
+                              "İndirim: ",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              "%${controller.indirimOran.value}",
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Obx(
+                        () => Visibility(
+                          visible:
+                              controller.manuelTutarDegeri.value.isNotEmpty &&
+                              controller.manuelTutarDegeri.value != "0.00" &&
+                              controller.basketList.isNotEmpty &&
+                              controller.manuelTutarDegeri.value != "0",
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text("Alınacak:"),
+                              Text("${controller.manuelTutarDegeri.value} ₺"),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
 
-                            controller.showSuccessSnackbar(
-                              message: "Alışveriş Tamamlandı",
-                            );
-                          }
-                        },
-                        icon: const Icon(Icons.done_all, size: 20),
-                        label: const Text(" Tamamla"),
+                  Row(
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: () => Get.to(BarcodeScanner(mod: 3)),
+                        icon: const Icon(Icons.barcode_reader, size: 20),
+                        label: const Text("Ekle"),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.black,
                           side: const BorderSide(color: Colors.black54),
@@ -227,10 +332,39 @@ class BasketPage extends GetView<BasketController> {
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                      SizedBox(width: 5),
+                      Visibility(
+                        visible: (controller.basketList.isNotEmpty),
+                        child: OutlinedButton.icon(
+                          onPressed: () async {
+                            bool sonuc = await controller.sepetiOnayla();
+                            if (sonuc) {
+                              Get.back(canPop: true);
+
+                              controller.showSuccessSnackbar(
+                                message: "Alışveriş Tamamlandı",
+                              );
+                            }
+                          },
+                          icon: const Icon(Icons.done_all, size: 20),
+                          label: const Text(" Tamamla"),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.black,
+                            side: const BorderSide(color: Colors.black54),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 10,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

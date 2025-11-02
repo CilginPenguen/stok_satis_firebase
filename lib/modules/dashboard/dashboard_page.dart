@@ -46,33 +46,37 @@ class DashboardPage extends GetView<DashboardController> {
                 Flexible(
                   flex: 1,
                   fit: FlexFit.loose,
-                  child: SummaryCard(
-                    title: "Aylık Gelir",
-                    amount: historyController.monthlyIncome,
-                    icon: Icons.calendar_month,
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? AppColors.darkIncome
-                        : AppColors.income,
-                    gradientColors:
-                        Theme.of(context).brightness == Brightness.dark
-                        ? AppColors.darkIncomeGradient
-                        : AppColors.incomeGradient,
+                  child: Obx(
+                    () => SummaryCard(
+                      title: "Aylık Gelir",
+                      amount: historyController.monthlyIncome.value,
+                      icon: Icons.calendar_month,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkIncome
+                          : AppColors.income,
+                      gradientColors:
+                          Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkIncomeGradient
+                          : AppColors.incomeGradient,
+                    ),
                   ),
                 ),
                 Flexible(
                   flex: 1,
                   fit: FlexFit.loose,
-                  child: SummaryCard(
-                    title: "Günlük Gelir",
-                    amount: historyController.dailyIncome,
-                    icon: Icons.calendar_today,
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? AppColors.darkIncome
-                        : AppColors.income,
-                    gradientColors:
-                        Theme.of(context).brightness == Brightness.dark
-                        ? AppColors.darkIncomeGradient
-                        : AppColors.incomeGradient,
+                  child: Obx(
+                    () => SummaryCard(
+                      title: "Günlük Gelir",
+                      amount: historyController.dailyIncome.value,
+                      icon: Icons.calendar_today,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkIncome
+                          : AppColors.income,
+                      gradientColors:
+                          Theme.of(context).brightness == Brightness.dark
+                          ? AppColors.darkIncomeGradient
+                          : AppColors.incomeGradient,
+                    ),
                   ),
                 ),
               ],

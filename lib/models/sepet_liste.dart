@@ -3,6 +3,8 @@ import 'urunler_liste.dart';
 class Sepet extends Urunler {
   int sepet_birim;
   double ilkToplam;
+  int indirim;
+  bool secilme;
 
   Sepet({
     required super.urun_id,
@@ -14,6 +16,8 @@ class Sepet extends Urunler {
     required super.marka,
     required this.sepet_birim,
     required this.ilkToplam,
+    this.indirim = 0,
+    this.secilme = false,
   });
 
   @override
@@ -21,6 +25,8 @@ class Sepet extends Urunler {
     final map = super.toMap();
     map['sepet_birim'] = sepet_birim;
     map['ilkToplam'] = ilkToplam;
+    map["indirim"] = indirim;
+    map["secilme"] = secilme;
     return map;
   }
 
@@ -37,6 +43,8 @@ class Sepet extends Urunler {
       marka: map['marka'],
       sepet_birim: map['sepet_birim'],
       ilkToplam: toDouble(map['ilkToplam']),
+      indirim: map["indirim"] ?? 0,
+      secilme: map["secilme"] ?? false,
     );
   }
 }

@@ -36,7 +36,7 @@ class ApproveStaff extends GetView<ProfilePageController> {
                   return Card(
                     child: ListTile(
                       key: ValueKey(approve.staffUid),
-                      title: Text("${approve.firstName} ${approve.lastName}"),
+                      title: Text("${approve.name} ${approve.surname}"),
                       subtitle: Text(
                         "Cihaz: ${approve.deviceApproval.deviceId}",
                       ),
