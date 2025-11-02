@@ -112,8 +112,8 @@ class HistoryController extends BaseController {
 
   /// Sadece bugünün verisi
   List<Gecmis> get todaysData {
-    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-    return gecmisList.where((item) => item.tarih == today).toList();
+    final today = DateFormat('dd.MM.yyyy').format(DateTime.now());
+    return gecmisList.where((item) => item.tarih.startsWith(today)).toList();
   }
 
   /// Tarih bazlı gruplama

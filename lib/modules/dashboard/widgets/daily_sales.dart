@@ -11,7 +11,8 @@ class DailySales extends GetView<DashboardController> {
       padding: const EdgeInsets.all(16),
       child: Obx(() {
         final isExpanded = controller.isExpanded.value;
-        final data = controller.hc.todaysData;
+        // 🔹 Sadece bugünün saatlik grupları
+        final todayGroups = controller.hc.todaysGroupedByHour;
 
         return Card(
           shape: RoundedRectangleBorder(
@@ -20,6 +21,7 @@ class DailySales extends GetView<DashboardController> {
           elevation: 3,
           child: Column(
             children: [
+              // 🔹 Başlık alanı
               InkWell(
                 onTap: () {
                   controller.isExpanded.toggle();
@@ -36,10 +38,10 @@ class DailySales extends GetView<DashboardController> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        isExpanded ? " Kapat" : "Bugünki Satışlar",
+                        isExpanded ? "Kapat" : "Bugünkü Satışlar",
                         style: const TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       Icon(
@@ -52,69 +54,153 @@ class DailySales extends GetView<DashboardController> {
                 ),
               ),
               if (isExpanded) const Divider(height: 0),
+
+              // 🔹 İçerik kısmı
               if (isExpanded)
-                data.isEmpty
+                todayGroups.isEmpty
                     ? const Padding(
                         padding: EdgeInsets.all(16),
                         child: Text(
-                          "Bugüne ait veri yok.",
+                          "Bugüne ait satış bulunamadı.",
                           style: TextStyle(color: Colors.grey),
                         ),
                       )
-                    : ListView.separated(
-                        physics: const NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        itemCount: data.length,
-                        separatorBuilder: (_, __) => const Divider(height: 1),
-                        itemBuilder: (context, index) {
-                          final item = data[index];
-                          return ListTile(
-                            leading: const Icon(
-                              Icons.shopping_cart,
-                              color: Colors.green,
-                            ),
-                            title: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Kategori: ${item.category}",
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
+                    : Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: ListView(
+                          physics: const NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          children: todayGroups.keys.map((hour) {
+                            final items = todayGroups[hour]!;
+
+                            // 🔹 O saate ait toplam tutar
+                            final double hourTotal = items.fold(0.0, (
+                              sum,
+                              item,
+                            ) {
+                              final satisOzeti = controller.hc.satisOzetList
+                                  .firstWhereOrNull(
+                                    (s) => s.satis_id == item.satis_id,
+                                  );
+                              if (satisOzeti != null) {
+                                return sum +
+                                    (satisOzeti.alinanTutar ==
+                                            satisOzeti.toplamTutar
+                                        ? satisOzeti.toplamTutar
+                                        : satisOzeti.alinanTutar);
+                              } else {
+                                return sum + item.toplam_tutar;
+                              }
+                            });
+
+                            // 🔹 Her saat için alt gruplama
+                            return Card(
+                              margin: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: ExpansionTile(
+                                title: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          hour,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                        Text(
+                                          controller.hc.getSellerName(items),
+                                        ),
+                                      ],
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 5,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.blueAccent,
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Text(
+                                        "₺${hourTotal.toStringAsFixed(2)}",
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                children: [
+                                  ListView.separated(
+                                    physics:
+                                        const NeverScrollableScrollPhysics(),
+                                    shrinkWrap: true,
+                                    itemCount: items.length,
+                                    separatorBuilder: (_, __) =>
+                                        const Divider(height: 1),
+                                    itemBuilder: (context, index) {
+                                      final item = items[index];
+                                      return ListTile(
+                                        leading: const Icon(
+                                          Icons.shopping_cart,
+                                          color: Colors.green,
+                                        ),
+                                        title: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              "Kategori: ${item.category}",
+                                              style: const TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            Text(
+                                              "Marka: ${item.marka}",
+                                              style: const TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        subtitle: Text(
+                                          "Açıklama: ${item.urun_description}",
+                                        ),
+                                        trailing: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            Text("Adet: ${item.sepet_birim}"),
+                                            Text(
+                                              "Birim: ₺${item.urun_fiyat.toStringAsFixed(2)}",
+                                            ),
+                                            Text(
+                                              "Toplam: ₺${item.toplam_tutar.toStringAsFixed(2)}",
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
                                   ),
-                                ),
-                                Text(
-                                  "Marka: ${item.marka}",
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            subtitle: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("Açıklama: ${item.urun_description}"),
-                              ],
-                            ),
-                            trailing: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("Adet: ${item.sepet_birim}"),
-                                Text(
-                                  "Birim Fiyat : ₺${item.urun_fiyat.toStringAsFixed(2)}",
-                                ),
-                                Text(
-                                  "Toplam : ₺${item.toplam_tutar.toStringAsFixed(2)}",
-                                ),
-                              ],
-                            ),
-                          );
-                        },
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                        ),
                       ),
             ],
           ),
