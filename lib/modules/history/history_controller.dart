@@ -57,7 +57,6 @@ class HistoryController extends BaseController {
                 return SatisOzeti.fromMap(e.data());
               }).toList();
               satisOzetList.value = satislar;
-              print(satisOzetList);
               _updateIncomes();
             });
       }
@@ -178,8 +177,6 @@ class HistoryController extends BaseController {
               TextButton(
                 onPressed: () async {
                   var c = Get.find<ProductController>();
-                  print(item.gecmis_id);
-                  print(item.urun_id);
                   c.gecmisStokGuncelle(
                     urunID: item.urun_id,
                     gecmisAdet: item.sepet_birim,

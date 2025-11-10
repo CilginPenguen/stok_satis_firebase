@@ -13,10 +13,18 @@ class HistoryExpansionTile extends GetView<HistoryController> {
         final groupedData = controller.groupedSalesByDayAndHour;
 
         if (groupedData.isEmpty) {
-          return const Card(
+          return Card(
             child: Padding(
               padding: EdgeInsets.all(16),
-              child: Text("Henüz satış verisi yok."),
+              child: Column(
+                children: [
+                  Text("Henüz satış verisi yok."),
+                  OutlinedButton(
+                    onPressed: () => controller.gecmisGetir(),
+                    child: Text("Yenile"),
+                  ),
+                ],
+              ),
             ),
           );
         }

@@ -1,6 +1,8 @@
 import 'package:get/get.dart';
 import 'package:stok_satis_firebase/modules/Auth/auth_bindings.dart';
 import 'package:stok_satis_firebase/modules/Auth/auth_page.dart';
+import 'package:stok_satis_firebase/modules/desktop/desktop_bindings.dart';
+import 'package:stok_satis_firebase/modules/desktop/desktop_page.dart';
 import 'package:stok_satis_firebase/modules/profile/profile_bindings.dart';
 import 'package:stok_satis_firebase/modules/profile/profile_page.dart';
 import 'package:stok_satis_firebase/modules/signup_temp/signup_bindings.dart';
@@ -29,6 +31,7 @@ abstract class AppRoutes {
   static const verify = "/verify";
   static const auth = "/auth";
   static const profile = "/profil";
+  static const desktop = "/desktop";
 }
 
 class AppPages {
@@ -73,6 +76,11 @@ class AppPages {
       name: AppRoutes.profile,
       page: () => ProfilePage(),
       binding: ProfileBindings(),
+    ),
+    GetPage(
+      name: AppRoutes.desktop,
+      page: () => DesktopPage(),
+      binding: DesktopBindings(),
     ),
   ];
 }

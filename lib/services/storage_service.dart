@@ -1,4 +1,4 @@
-import 'package:get/get_state_manager/get_state_manager.dart';
+import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 abstract class StorageKeys {
@@ -7,10 +7,16 @@ abstract class StorageKeys {
 }
 
 class StorageService extends GetxController {
-  late final SharedPreferences _preferences;
+  bool _initialized = false; // 🔹 Tek seferlik init koruması
+  late SharedPreferences _preferences;
+  final RxList<String> favorites = <String>[].obs;
+
+  bool get isInitialized => _initialized; // 🔹 Splash'ta kullanılacak
 
   Future<StorageService> init() async {
+    if (_initialized) return this; // ✅ İkinci kez init etmeyi engelle
     _preferences = await SharedPreferences.getInstance();
+    _initialized = true;
     return this;
   }
 
@@ -30,28 +36,17 @@ class StorageService extends GetxController {
         throw ArgumentError("Desteklenmeyen veri türü");
       }
     } catch (e) {
-      print("Veri eklenirken hata olustu");
+      print("Veri eklenirken hata oluştu: $e");
       return false;
     }
   }
 
   T? getValue<T>(String key) {
     try {
-      if (T == String) {
-        return _preferences.getString(key) as T;
-      } else if (T == int) {
-        return _preferences.getInt(key) as T;
-      } else if (T == double) {
-        return _preferences.getDouble(key) as T;
-      } else if (T == bool) {
-        return _preferences.getBool(key) as T;
-      } else if (T == List<String>) {
-        return _preferences.getStringList(key) as T;
-      } else {
-        throw ArgumentError("Desteklenmeyen veri türü");
-      }
+      final value = _preferences.get(key);
+      return value == null ? null : value as T?;
     } catch (e) {
-      print("Veri storagedan okunurken hata çıktı $e");
+      print("Veri storagedan okunurken hata çıktı: $e");
       return null;
     }
   }
@@ -60,7 +55,7 @@ class StorageService extends GetxController {
     try {
       return await _preferences.remove(key);
     } catch (e) {
-      print("keyi verilen değer silinirken hata olustu $e");
+      print("Key silinirken hata oluştu: $e");
       return false;
     }
   }
@@ -69,7 +64,7 @@ class StorageService extends GetxController {
     try {
       return await _preferences.clear();
     } catch (e) {
-      print("clear fonksiyonunda  hata olustu $e");
+      print("clear fonksiyonunda hata oluştu: $e");
       return false;
     }
   }
@@ -80,6 +75,7 @@ class StorageService extends GetxController {
 
   T getValueOrDefault<T>(String key, T defaultValue) {
     return getValue<T>(key) ?? defaultValue;
+    // 🔹 null ise varsayılan döner
   }
 
   Map<String, dynamic> getAllValues() {

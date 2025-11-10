@@ -96,7 +96,6 @@ class StaffExpansiontile extends GetView<ProfilePageController> {
                                 "Uygulamaya Girebilir",
                                 staff.deviceApproval.canLogin,
                                 (val) {
-                                  print(staff.deviceApproval.canLogin);
                                   controller.updateCanLogin(
                                     uid: staff.staffUid ?? "",
                                     canLogin: val ?? false,

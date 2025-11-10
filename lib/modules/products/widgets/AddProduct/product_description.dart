@@ -16,7 +16,7 @@ class ProductDescription extends GetView<ProductController> {
         border: OutlineInputBorder(),
         prefixIcon: Icon(Icons.abc_outlined),
       ),
-      maxLength: 10,
+      maxLength: 20,
       onChanged: (value) {
         controller.urunDescription.value = value;
       },

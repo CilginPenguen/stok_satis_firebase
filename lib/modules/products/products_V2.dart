@@ -10,8 +10,6 @@ class ProductByCategoryPage extends GetView<ProductController> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-
     return Scaffold(
       appBar: AppBar(title: const Text("Ürünler"), actions: [ProductActions()]),
       body: Obx(() {
@@ -88,77 +86,87 @@ class ProductByCategoryPage extends GetView<ProductController> {
                           ),
                         ],
                       ),
-                      Row(
-                        children: [
-                          Column(
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final localWidth =
+                              constraints.maxWidth; // sadece o kartın genişliği
+
+                          return Row(
                             children: [
-                              DropdownButton2<String>(
-                                isExpanded: true,
-                                value: safeSelectedBrand,
-                                items: brandOptions
-                                    .map(
-                                      (b) => DropdownMenuItem(
-                                        value: b,
-                                        child: Text(
-                                          b,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    )
-                                    .toList(),
-                                onChanged: (value) {
-                                  if (value == null) return;
-                                  controller.selectedBrand[category] = value;
-                                },
-                                buttonStyleData: ButtonStyleData(
-                                  width: screenWidth * 0.3,
-                                ),
-                                dropdownStyleData: DropdownStyleData(
-                                  width: screenWidth * 0.5,
-                                ),
+                              Column(
+                                children: [
+                                  DropdownButton2<String>(
+                                    isExpanded: true,
+                                    value: safeSelectedBrand,
+                                    items: brandOptions
+                                        .map(
+                                          (b) => DropdownMenuItem(
+                                            value: b,
+                                            child: Text(
+                                              b,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
+                                    onChanged: (value) {
+                                      if (value == null) return;
+                                      controller.selectedBrand[category] =
+                                          value;
+                                    },
+                                    buttonStyleData: ButtonStyleData(
+                                      width:
+                                          localWidth *
+                                          0.4, // artık ekran değil, kart oranı
+                                    ),
+                                    dropdownStyleData: DropdownStyleData(
+                                      width: localWidth * 0.6,
+                                    ),
+                                  ),
+                                  const Text(
+                                    "Marka Filtresi",
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                ],
                               ),
-                              const Text(
-                                "Marka Filtresi",
-                                style: TextStyle(fontSize: 8),
+                              SizedBox(width: localWidth * 0.02),
+                              Column(
+                                children: [
+                                  DropdownButton2<String>(
+                                    isExpanded: true,
+                                    value: safeSelectedDesc,
+                                    items: descriptionOptions
+                                        .map(
+                                          (d) => DropdownMenuItem(
+                                            value: d,
+                                            child: Text(
+                                              d,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
+                                    onChanged: (value) {
+                                      if (value == null) return;
+                                      controller.selectedDescription[category] =
+                                          value;
+                                    },
+                                    buttonStyleData: ButtonStyleData(
+                                      width: localWidth * 0.4,
+                                    ),
+                                    dropdownStyleData: DropdownStyleData(
+                                      width: localWidth * 0.6,
+                                    ),
+                                  ),
+                                  const Text(
+                                    "Açıklama Filtresi",
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                ],
                               ),
                             ],
-                          ),
-                          SizedBox(width: screenWidth * 0.02),
-                          Column(
-                            children: [
-                              DropdownButton2<String>(
-                                isExpanded: true,
-                                value: safeSelectedDesc,
-                                items: descriptionOptions
-                                    .map(
-                                      (d) => DropdownMenuItem(
-                                        value: d,
-                                        child: Text(
-                                          d,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    )
-                                    .toList(),
-                                onChanged: (value) {
-                                  if (value == null) return;
-                                  controller.selectedDescription[category] =
-                                      value;
-                                },
-                                buttonStyleData: ButtonStyleData(
-                                  width: screenWidth * 0.3,
-                                ),
-                                dropdownStyleData: DropdownStyleData(
-                                  width: screenWidth * 0.5,
-                                ),
-                              ),
-                              const Text(
-                                "Açıklama Filtresi",
-                                style: TextStyle(fontSize: 8),
-                              ),
-                            ],
-                          ),
-                        ],
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -209,9 +217,7 @@ class ProductByCategoryPage extends GetView<ProductController> {
                                     horizontal: 8,
                                     vertical: 4,
                                   ),
-                                  child: GestureDetector(
-                                    child: ProductCard(urun: item),
-                                  ),
+                                  child: ProductCard(urun: item),
                                 ),
                               ),
                             )

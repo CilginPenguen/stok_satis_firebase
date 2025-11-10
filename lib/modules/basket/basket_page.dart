@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../themes/app_colors.dart';
-import '../products/widgets/Product/barcode_scanner.dart';
 import '../products/products_V2.dart';
+import '../products/widgets/Product/barcode_scanner.dart';
 import 'basket_controller.dart';
 
 class BasketPage extends GetView<BasketController> {
@@ -24,14 +24,17 @@ class BasketPage extends GetView<BasketController> {
       },
       child: Scaffold(
         appBar: AppBar(
-          leading: BackButton(
-            onPressed: () async {
-              if (controller.basketList.isNotEmpty) {
-                await controller.saveBasket();
-              } else {
-                Get.back();
-              }
-            },
+          leading: Visibility(
+            visible: !controller.isWindows(),
+            child: BackButton(
+              onPressed: () async {
+                if (controller.basketList.isNotEmpty) {
+                  await controller.saveBasket();
+                } else {
+                  Get.back();
+                }
+              },
+            ),
           ),
           title: const Text("Sepet"),
           actions: [
@@ -70,7 +73,6 @@ class BasketPage extends GetView<BasketController> {
                       child: IconButton(
                         onPressed: () {
                           controller.elleTutarAyarla();
-                          print(controller.manuelTutarDegeri);
                         },
                         tooltip: "Alınan Tutarı Gir",
                         icon: const Icon(Icons.payments_outlined),
@@ -82,24 +84,31 @@ class BasketPage extends GetView<BasketController> {
                         onPressed: () {
                           controller.indirimModu.value = true;
                         },
+                        tooltip: "İndirim Ayarla",
                         icon: const Icon(Icons.percent),
                       ),
                     ),
-                    IconButton(
-                      onPressed: () {
-                        Get.to(() => const ProductByCategoryPage());
-                      },
-                      icon: const Icon(Icons.add_shopping_cart),
+                    Visibility(
+                      visible: !controller.isWindows(),
+                      child: IconButton(
+                        onPressed: () {
+                          Get.to(() => const ProductByCategoryPage());
+                        },
+                        icon: const Icon(Icons.add_shopping_cart),
+                      ),
                     ),
-                    IconButton(
-                      onPressed: () async {
-                        if (controller.basketList.isNotEmpty) {
-                          await controller.saveBasket();
-                        } else {
-                          Get.back();
-                        }
-                      },
-                      icon: const Icon(Icons.home),
+                    Visibility(
+                      visible: !controller.isWindows(),
+                      child: IconButton(
+                        onPressed: () async {
+                          if (controller.basketList.isNotEmpty) {
+                            await controller.saveBasket();
+                          } else {
+                            Get.back();
+                          }
+                        },
+                        icon: const Icon(Icons.home),
+                      ),
                     ),
                   ],
                 );
@@ -238,21 +247,12 @@ class BasketPage extends GetView<BasketController> {
           }
         }),
         bottomNavigationBar: Obx(
-          () => SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
+          () => Material(
+            elevation: 12,
+            color: AppColors.darkTiffanyBlue,
             child: Container(
-              width: MediaQuery.of(context).size.width,
+              width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: BoxDecoration(
-                color: AppColors.darkTiffanyBlue,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(125),
-                    blurRadius: 10,
-                    offset: const Offset(0, -3),
-                  ),
-                ],
-              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -269,6 +269,7 @@ class BasketPage extends GetView<BasketController> {
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
                       ),
                     ],
@@ -301,7 +302,8 @@ class BasketPage extends GetView<BasketController> {
                               controller.manuelTutarDegeri.value.isNotEmpty &&
                               controller.manuelTutarDegeri.value != "0.00" &&
                               controller.basketList.isNotEmpty &&
-                              controller.manuelTutarDegeri.value != "0",
+                              controller.manuelTutarDegeri.value != "0" &&
+                              controller.manuelTutarDegeri.value != "0.0",
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -313,53 +315,26 @@ class BasketPage extends GetView<BasketController> {
                       ),
                     ],
                   ),
-
                   Row(
                     children: [
-                      OutlinedButton.icon(
-                        onPressed: () => Get.to(BarcodeScanner(mod: 3)),
-                        icon: const Icon(Icons.barcode_reader, size: 20),
-                        label: const Text("Ekle"),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.black,
-                          side: const BorderSide(color: Colors.black54),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 10,
-                          ),
+                      Visibility(
+                        visible: !controller.isWindows(),
+                        child: OutlinedButton.icon(
+                          onPressed: () => Get.to(BarcodeScanner(mod: 3)),
+                          icon: const Icon(Icons.barcode_reader, size: 20),
+                          label: const Text("Ekle"),
                         ),
                       ),
                       SizedBox(width: 5),
-                      Visibility(
-                        visible: (controller.basketList.isNotEmpty),
-                        child: OutlinedButton.icon(
-                          onPressed: () async {
-                            bool sonuc = await controller.sepetiOnayla();
-                            if (sonuc) {
-                              Get.back(canPop: true);
-
-                              controller.showSuccessSnackbar(
-                                message: "Alışveriş Tamamlandı",
-                              );
-                            }
-                          },
-                          icon: const Icon(Icons.done_all, size: 20),
-                          label: const Text(" Tamamla"),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.black,
-                            side: const BorderSide(color: Colors.black54),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 10,
-                            ),
-                          ),
-                        ),
+                      OutlinedButton.icon(
+                        onPressed: () async {
+                          if (!controller.isWindows()) {
+                            Get.back();
+                          }
+                          await controller.sepetiOnayla();
+                        },
+                        icon: const Icon(Icons.done_all),
+                        label: const Text("Tamamla"),
                       ),
                     ],
                   ),

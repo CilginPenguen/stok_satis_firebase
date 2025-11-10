@@ -33,8 +33,6 @@ class SplashController extends GetxController {
       if (Get.currentRoute == AppRoutes.splash) {
         Get.offAllNamed(AppRoutes.auth);
       }
-    } catch (e) {
-      print("Splash init hatası: $e");
-    }
+    } catch (e) {}
   }
 }

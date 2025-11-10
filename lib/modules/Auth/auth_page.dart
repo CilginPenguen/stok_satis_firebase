@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:stok_satis_firebase/modules/Auth/auth_controller.dart';
+import 'package:stok_satis_firebase/modules/desktop/desktop_page.dart';
 import 'package:stok_satis_firebase/services/storage_service.dart';
 
 import '../../core/base_controller.dart';
@@ -32,6 +33,9 @@ class AuthPage extends GetView<AuthController> {
         if (user != null) {
           if (!user.emailVerified) {
             return const VerifyPage();
+          }
+          if (controller.isWindows()) {
+            return DesktopPage();
           }
           return const HomePage();
         }

@@ -26,7 +26,6 @@ class QrScanner extends GetView<LoginController> {
                 if (qrValue != null && qrValue.isNotEmpty) {
                   scanned = true;
                   controller.uidController.text = qrValue;
-                  print(qrValue);
                   Get.back();
                 }
               }
@@ -39,7 +38,6 @@ class QrScanner extends GetView<LoginController> {
                 if (qrValue != null && qrValue.isNotEmpty) {
                   scanned = true;
                   t.uidController.text = qrValue;
-                  print(qrValue);
                   Get.back();
                 }
               }

@@ -23,6 +23,49 @@ class BasketController extends BaseController {
   RxInt indirimOran = 0.obs;
   RxString manuelTutarDegeri = ''.obs;
 
+  // 🔹 Barkoddan ürünü bulup sepete ekle
+  void processBarcode(String barcode) {
+    final productController = Get.find<ProductController>();
+    final product = productController.urunListesi.firstWhereOrNull(
+      (e) => e.urun_barkod == barcode,
+    );
+
+    if (product == null) {
+      Get.snackbar("Ürün bulunamadı", "Barkod: $barcode");
+      return;
+    }
+
+    final index = basketList.indexWhere(
+      (item) => item.urun_id == product.urun_id,
+    );
+
+    if (index != -1) {
+      basketList[index].sepet_birim++;
+      basketList.refresh();
+    } else {
+      basketList.add(
+        Sepet(
+          urun_id: product.urun_id,
+          urun_barkod: product.urun_barkod,
+          urun_description: product.urun_description,
+          urun_adet: product.urun_adet,
+          urun_fiyat: product.urun_fiyat,
+          sepet_birim: 1,
+          ilkToplam: product.urun_fiyat,
+          category: product.category,
+          marka: product.marka,
+        ),
+      );
+    }
+
+    Get.snackbar(
+      "Sepete Eklendi",
+      "${product.marka} / ${product.urun_description}",
+      snackPosition: SnackPosition.TOP,
+      duration: const Duration(seconds: 2),
+    );
+  }
+
   bool sepetKontrol({required String id}) {
     return basketList.any((item) => item.urun_id == id);
   }
@@ -104,12 +147,15 @@ class BasketController extends BaseController {
         gecmisYenile.dailyIncome;
         gecmisYenile.monthlyIncome;
         basketList.clear();
+        manuelTutarDegeri.value = "0.0";
+        indirimOran.value = 0;
+        manuelTutar.clear();
+        showSuccessSnackbar(message: "Alışveriş Tamamlandı");
         return true;
       }
       showErrorSnackbar(message: "Kullanıcı tarafında hata");
       return false;
     } on Exception catch (e) {
-      print(e);
       showErrorSnackbar(message: "Bir hata oluştu: $e");
       return false;
     }

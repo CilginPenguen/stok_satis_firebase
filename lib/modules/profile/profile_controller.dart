@@ -43,7 +43,6 @@ class ProfilePageController extends BaseController {
           final profile = data?['profil'];
           if (profile != null) {
             owner.value = Owner.fromMap(snap.id, profile);
-            print("Owner profil yüklendi: ${owner.value}");
           }
         }
       } else {
@@ -63,18 +62,12 @@ class ProfilePageController extends BaseController {
             final data = snap.data();
             if (data != null) {
               staff.value = Staff.fromMap(data, docId: snap.id);
-              print("Staff profil yüklendi: ${staff.value!.permissions}");
             }
-          } else {
-            print("Staff dokümanı bulunamadı.");
-          }
-        } else {
-          print("ownerUid veya staffUid bulunamadı.");
-        }
+          } else {}
+        } else {}
       }
     } catch (e) {
       Get.snackbar("Hata", "Profil gelirken hata oluştu");
-      print("Profil getirirken hata: $e");
     }
   }
 
@@ -94,7 +87,6 @@ class ProfilePageController extends BaseController {
                 .where((e) => e.deviceApproval.approved == true)
                 .toList();
             personelList.value = onayliPers;
-            print(personelList);
             final bekleyenler = persons
                 .where((p) => p.deviceApproval.approved == null)
                 .toList();
@@ -160,7 +152,6 @@ class ProfilePageController extends BaseController {
   Future<void> updateCanLogin({
     required String? uid,
     required bool canLogin,
-    required,
   }) async {
     try {
       String ownerUid = await bringOwnerUid();

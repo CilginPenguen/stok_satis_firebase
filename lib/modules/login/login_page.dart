@@ -11,7 +11,7 @@ class LoginPage extends GetView<LoginController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: true, // Klavye açılınca ekranı küçült
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(title: const Text("Giriş")),
       body: SafeArea(
         child: LayoutBuilder(
@@ -29,26 +29,31 @@ class LoginPage extends GetView<LoginController> {
                           children: [
                             Visibility(
                               visible: controller.personal.value,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Expanded(
-                                    child: TextField(
-                                      decoration: const InputDecoration(
-                                        labelText: "Dükkan QR Code",
-                                      ),
-                                      controller: controller.uidController,
-                                      readOnly: true,
-                                      obscureText: true,
+                              child: controller.isWindows()
+                                  ? Row()
+                                  : Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Expanded(
+                                          child: TextField(
+                                            decoration: const InputDecoration(
+                                              labelText: "Dükkan QR Code",
+                                            ),
+                                            controller:
+                                                controller.uidController,
+                                            readOnly: true,
+                                            obscureText: true,
+                                          ),
+                                        ),
+                                        OutlinedButton(
+                                          onPressed: () => Get.to(
+                                            QrScanner(forSignUp: false),
+                                          ),
+                                          child: const Icon(Icons.qr_code),
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                                  OutlinedButton(
-                                    onPressed: () =>
-                                        Get.to(QrScanner(forSignUp: false)),
-                                    child: const Icon(Icons.qr_code),
-                                  ),
-                                ],
-                              ),
                             ),
                             Visibility(
                               visible:
@@ -113,19 +118,23 @@ class LoginPage extends GetView<LoginController> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Visibility(
-                                  visible: !controller.owner.value,
-                                  child: OutlinedButton.icon(
-                                    onPressed: () {
-                                      if (!controller.personal.value) {
-                                        controller.personal.value = true;
-                                        controller.owner.value = false;
-                                      } else if (controller.personal.value) {
-                                        controller.personalSignIn();
-                                      }
-                                    },
-                                    label: const Text("Personel Giriş"),
-                                    icon: const Icon(Icons.person_2_outlined),
+                                Obx(
+                                  () => Visibility(
+                                    visible:
+                                        !controller.owner.value &&
+                                        controller.isWindowsOwnerUidSet.value,
+                                    child: OutlinedButton.icon(
+                                      onPressed: () {
+                                        if (!controller.personal.value) {
+                                          controller.personal.value = true;
+                                          controller.owner.value = false;
+                                        } else if (controller.personal.value) {
+                                          controller.personalSignIn();
+                                        }
+                                      },
+                                      label: const Text("Personel Giriş"),
+                                      icon: const Icon(Icons.person_2_outlined),
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(width: 15),

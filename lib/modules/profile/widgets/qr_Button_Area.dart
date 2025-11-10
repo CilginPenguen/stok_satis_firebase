@@ -13,7 +13,7 @@ class QrButtonArea extends GetView<ProfilePageController> {
   @override
   Widget build(BuildContext context) {
     return Visibility(
-      visible: controller.checkOwner(),
+      visible: controller.checkOwner() && !controller.isWindows(),
       child: Obx(() {
         return controller.qr.value
             ? Column(

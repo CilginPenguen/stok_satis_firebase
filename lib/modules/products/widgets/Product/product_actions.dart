@@ -11,7 +11,7 @@ class ProductActions extends GetView<ProductController> {
   @override
   Widget build(BuildContext context) {
     return Visibility(
-      visible: Get.isRegistered<BasketController>(),
+      visible: Get.isRegistered<BasketController>() && !controller.isWindows(),
       child: Row(
         children: [
           IconButton(

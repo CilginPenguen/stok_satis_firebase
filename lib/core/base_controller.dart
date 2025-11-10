@@ -1,14 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:get/get_connect/http/src/utils/utils.dart';
+import 'package:stok_satis_firebase/modules/desktop/desktop_page.dart';
 import 'package:stok_satis_firebase/modules/signup_temp/personal/personal_can_login.dart';
 import 'package:stok_satis_firebase/routes/app_pages.dart';
 import 'package:stok_satis_firebase/services/storage_service.dart';
 
 import '../models/deviceapproval.dart';
 import '../models/staff.dart';
+import '../modules/basket/basket_controller.dart';
 import '../modules/home/home_page.dart';
+import '../modules/products/product_controller.dart';
 import '../modules/signup_temp/personal/personal_reject.dart';
 import '../modules/signup_temp/personal/personal_waiting_approval.dart';
 import '../themes/app_colors.dart';
@@ -19,6 +24,98 @@ class BaseController extends GetxController {
   final storage = Get.find<StorageService>();
   final auth = FirebaseAuth.instance;
   final db = FirebaseFirestore.instance;
+  final urunEklemeBool = false.obs;
+  final urunDuzenleBool = false.obs;
+
+  /// 🔹 Barkod tamponu
+  String _buffer = '';
+  DateTime? _lastKeyTime;
+
+  /// 🔹 Listener aktif mi
+  bool _listening = false;
+
+  @override
+  void onInit() {
+    super.onInit();
+    _startListening();
+    checkWindowsOwnerUid();
+  }
+
+  @override
+  void onClose() {
+    _stopListening();
+    super.onClose();
+  }
+
+  // ✅ Mod değiştirme fonksiyonları
+  void setEkleme(bool value) {
+    urunEklemeBool.value = value;
+    if (value) urunDuzenleBool.value = false;
+  }
+
+  void setDuzenle(bool value) {
+    urunDuzenleBool.value = value;
+    if (value) urunEklemeBool.value = false;
+  }
+
+  void reset() {
+    urunEklemeBool.value = false;
+    urunDuzenleBool.value = false;
+  }
+
+  // 🧠 Barkod dinleme başlat
+  void _startListening() {
+    if (_listening) return;
+    _listening = true;
+    HardwareKeyboard.instance.addHandler(_handleKeyEvent);
+  }
+
+  // 🧠 Barkod dinleme durdur
+  void _stopListening() {
+    if (!_listening) return;
+    _listening = false;
+    HardwareKeyboard.instance.removeHandler(_handleKeyEvent);
+  }
+
+  // 🧩 Klavye olaylarını dinler
+  bool _handleKeyEvent(KeyEvent event) {
+    if (event is! KeyDownEvent) return false;
+    final key = event.logicalKey;
+
+    final now = DateTime.now();
+    if (_lastKeyTime == null ||
+        now.difference(_lastKeyTime!).inMilliseconds > 100) {
+      _buffer = '';
+    }
+    _lastKeyTime = now;
+
+    if (key == LogicalKeyboardKey.enter) {
+      final barkod = _buffer.trim();
+      if (barkod.isNotEmpty) _processBarcode(barkod);
+      _buffer = '';
+    } else {
+      _buffer += key.keyLabel;
+    }
+
+    return false;
+  }
+
+  // 🧩 Barkod okunduğunda çalışır
+  void _processBarcode(String barkod) {
+    final productCtrl = Get.isRegistered<ProductController>()
+        ? Get.find<ProductController>()
+        : null;
+    final basketCtrl = Get.isRegistered<BasketController>()
+        ? Get.find<BasketController>()
+        : null;
+
+    if (urunEklemeBool.value) {
+      basketCtrl?.processBarcode(barkod);
+    } else if (urunDuzenleBool.value) {
+      productCtrl?.barkodUrunArama(barkod);
+    }
+  }
+
   Future<void> storageClean() async {
     storage.remove("ownerUid");
     storage.remove("staffUid");
@@ -106,6 +203,15 @@ class BaseController extends GetxController {
     } else if (Platform.isIOS) {
       final iosInfo = await deviceInfoPlugin.iosInfo;
       return '${iosInfo.name}-${iosInfo.model}-${iosInfo.identifierForVendor}';
+    } else if (Platform.isWindows) {
+      final windowsInfo = await deviceInfoPlugin.windowsInfo;
+      return 'Windows-${windowsInfo.computerName}-${windowsInfo.numberOfCores}C';
+    } else if (Platform.isMacOS) {
+      final macInfo = await deviceInfoPlugin.macOsInfo;
+      return 'macOS-${macInfo.computerName}-${macInfo.osRelease}';
+    } else if (Platform.isLinux) {
+      final linuxInfo = await deviceInfoPlugin.linuxInfo;
+      return 'Linux-${linuxInfo.name}-${linuxInfo.id}';
     } else {
       return 'unknown-device';
     }
@@ -155,9 +261,12 @@ class BaseController extends GetxController {
           // Cihaz eşleşiyorsa approved durumuna göre yönlendir
           if (deviceApproval.approved == true) {
             if (deviceApproval.canLogin == true) {
+              if (isWindows()) {
+                return const DesktopPage();
+              }
               return const HomePage();
             } else {
-              return PersonalCanLogin();
+              return const PersonalCanLogin();
             }
           } else if (deviceApproval.approved == false) {
             storageClean();
@@ -274,5 +383,50 @@ class BaseController extends GetxController {
   Future<String?> bringStaffUid() async {
     final staffUid = storage.getValue<String>("staffUid");
     return staffUid;
+  }
+
+  bool isWindows() {
+    if (Platform.isWindows) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  Future<void> updateFavorite({
+    required String uid,
+    required bool isFavorited,
+  }) async {
+    try {
+      String ownerUid = await bringOwnerUid();
+      await db
+          .collection("users")
+          .doc(ownerUid)
+          .collection("urunler")
+          .doc(uid)
+          .update({"isFavorited": isFavorited});
+      final pc = Get.find<ProductController>();
+      final index = pc.urunListesi.indexWhere((e) => e.urun_id == uid);
+      if (index != -1) {
+        final updated = pc.urunListesi[index].copyWith(
+          isFavorited: isFavorited,
+        );
+        pc.urunListesi[index] = updated;
+        pc.urunListesi.refresh(); // 🔁 UI’ı yeniden build et
+      }
+    } catch (e) {
+      showErrorSnackbar(message: "Favori İşleminde Hata: $e");
+    }
+  }
+
+  final isWindowsOwnerUidSet = false.obs;
+
+  Future<void> checkWindowsOwnerUid() async {
+    if (isWindows()) {
+      final uid = await bringOwnerUid();
+      isWindowsOwnerUidSet.value = uid.isNotEmpty;
+    } else {
+      isWindowsOwnerUidSet.value = true;
+    }
   }
 }

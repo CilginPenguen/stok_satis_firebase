@@ -12,10 +12,13 @@ import 'package:stok_satis_firebase/routes/app_pages.dart';
 import 'package:stok_satis_firebase/services/storage_service.dart';
 import 'package:uuid/uuid.dart';
 
+import '../history/history_controller.dart';
+import '../products/product_controller.dart' show ProductController;
+
 class SignupController extends BaseController {
   final emailorNameController = TextEditingController();
   final passwordOrSurnameController = TextEditingController();
-  final uidController = TextEditingController();
+  var uidController = TextEditingController();
   final ownerName = TextEditingController();
   final ownerSurname = TextEditingController();
   final _auth = FirebaseAuth.instance;
@@ -31,6 +34,9 @@ class SignupController extends BaseController {
         Get.find<StorageService>(); // global StorageService instance
 
     try {
+      if (isWindows()) {
+        uidController.text = await bringOwnerUid();
+      }
       // Owner dokümanını getir
       final ownerDoc = await _db
           .collection("users")
@@ -55,7 +61,6 @@ class SignupController extends BaseController {
       }
       if (query.docs.isNotEmpty) {
         final existingStaffDoc = query.docs.first;
-        debugPrint(uidController.text);
         // StorageService'e yaz
         await storage.setValue<String>("staffUid", existingStaffDoc.id);
         await storage.setValue<String>("ownerUid", uidController.text.trim());
@@ -87,30 +92,19 @@ class SignupController extends BaseController {
           .doc(staffUid)
           .set(staff.toMap());
 
-      print("Staff UID: $staffUid (${staffUid.runtimeType})");
-      print(
-        "Owner UID: ${uidController.text} (${uidController.text.runtimeType})",
-      );
-
       // SharedPreferences'e ekle ve hataları detaylı logla
-      final staffSaved = await storage.setValue("staffUid", staffUid);
-      final ownerSaved = await storage.setValue(
-        "ownerUid",
-        uidController.text.trim(),
-      );
-      final ownerUid = storage.getValue<String>("ownerUid");
-      final staffUidd = storage.getValue<String>("staffUid");
-      print(ownerUid);
-      print(staffUidd);
-
-      if (!staffSaved || !ownerSaved) {
-        print("SharedPreferences'e veri eklenirken sorun oluştu.");
+      await storage.setValue("staffUid", staffUid);
+      if (!isWindows()) {
+        await storage.setValue("ownerUid", uidController.text.trim());
       }
+      final pc = Get.find<ProductController>();
+      final gc = Get.find<HistoryController>();
+      await pc.urunleriGetir();
+      await gc.gecmisGetir();
+
       clearForm();
       Get.offAllNamed(AppRoutes.auth);
-    } catch (e, s) {
-      print("personalSignUp sırasında hata oluştu: $e");
-      print(s); // detaylı stack trace
+    } catch (e) {
       Get.snackbar("Hata", e.toString());
     }
   }
@@ -137,6 +131,10 @@ class SignupController extends BaseController {
           joinedAt: DateTime.now(),
         );
         user.updateDisplayName(dispName);
+        if (isWindows()) {
+          await storage.setValue<String>("ownerUid", user.uid);
+          await checkWindowsOwnerUid();
+        }
 
         await _db.collection('users').doc(user.uid).set({
           "profil": owner.toMap(),
@@ -217,7 +215,6 @@ class SignupController extends BaseController {
       if (refreshedUser != null && refreshedUser.emailVerified) {
         // AuthGate yönlendirecek
         Get.offAllNamed(AppRoutes.home);
-        print("Başarılı");
         return;
       } else {
         Get.snackbar("Onay Durumu", "Henüz Doğrulanmadı");

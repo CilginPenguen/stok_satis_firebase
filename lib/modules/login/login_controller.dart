@@ -4,6 +4,8 @@ import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:stok_satis_firebase/core/base_controller.dart';
+import 'package:stok_satis_firebase/modules/history/history_controller.dart';
+import 'package:stok_satis_firebase/modules/products/product_controller.dart';
 
 import '../../routes/app_pages.dart';
 import '../../services/storage_service.dart';
@@ -37,10 +39,22 @@ class LoginController extends BaseController {
           "Doğrulama",
           "Lütfen Giriş Yapmadan Önce Doğrulama Yapınız",
         );
+
         await _auth.signOut();
         return;
       }
+      final user = userCredential.user;
+      if (user != null && isWindows()) {
+        await storage.setValue<String>("ownerUid", user.uid);
+        print(storage.getValue<String>("ownerUid"));
+        await checkWindowsOwnerUid();
+      }
       clearForm();
+      final pc = Get.find<ProductController>();
+      final gc = Get.find<HistoryController>();
+      await pc.urunleriGetir();
+      await gc.gecmisGetir();
+      Get.offAllNamed(AppRoutes.auth);
 
       // giriş başarılı, yönlendirme yapılabilir
     } on FirebaseAuthException catch (e) {
@@ -55,13 +69,20 @@ class LoginController extends BaseController {
   void personalSignIn() async {
     final storage = Get.find<StorageService>();
 
-    final ownerUid = uidController.text.trim(); // QR’dan gelen
+    var ownerUid = uidController.text.trim(); // QR’dan gelen
     final name = emailorNameController.text.trim();
     final surname = passwordOrSurnameController.text.trim();
-
-    if (ownerUid.isEmpty || name.isEmpty || surname.isEmpty) {
-      Get.snackbar("Hata", "Lütfen tüm alanları doldurun");
-      return;
+    if (!isWindows()) {
+      if (ownerUid.isEmpty || name.isEmpty || surname.isEmpty) {
+        Get.snackbar("Hata", "Lütfen tüm alanları doldurun");
+        return;
+      }
+    } else {
+      if (name.isEmpty || surname.isEmpty) {
+        Get.snackbar("Hata", "Lütfen tüm alanları doldurun");
+        return;
+      }
+      ownerUid = await bringOwnerUid();
     }
 
     try {
@@ -83,14 +104,13 @@ class LoginController extends BaseController {
       }
 
       final staffDoc = query.docs.first;
-      print("staffDoc.id:  ${staffDoc.id}");
-      print(staffDoc.id.runtimeType);
-
       // StorageService’e kaydet
       await storage.setValue<String>("ownerUid", ownerUid);
       await storage.setValue<String>("staffUid", staffDoc.id);
-      print("owner Uid: ${storage.getValue<String>("ownerUid")}");
-      print("staff Uid: ${storage.getValue<String>("staffUid")}");
+      final pc = Get.find<ProductController>();
+      final gc = Get.find<HistoryController>();
+      await pc.urunleriGetir();
+      await gc.gecmisGetir();
       clearForm();
       // AuthPage’e dön
       Get.offAllNamed(AppRoutes.auth);

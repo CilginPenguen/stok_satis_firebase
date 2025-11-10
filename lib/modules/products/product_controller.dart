@@ -16,6 +16,7 @@ import 'widgets/Product/info_row.dart';
 
 class ProductController extends BaseController {
   var urunListesi = <Urunler>[].obs;
+  var favoriListe = <Urunler>[].obs;
   var aktifSayfa = 1.obs;
   final barkodTextController = TextEditingController();
   final productCountTextController = TextEditingController();
@@ -222,7 +223,9 @@ class ProductController extends BaseController {
   @override
   void onInit() {
     super.onInit();
-    urunleriGetir();
+    Future.delayed(const Duration(milliseconds: 200), () {
+      urunleriGetir();
+    });
   }
 
   Future<void> urunleriGetir() async {
@@ -235,10 +238,17 @@ class ProductController extends BaseController {
             .collection("urunler")
             .snapshots()
             .listen((snapshot) {
+              final favoriler = snapshot.docs
+                  .map((e) {
+                    return Urunler.fromMap(e.data(), docId: e.id);
+                  })
+                  .where((item) => item.isFavorited == true)
+                  .toList();
               final urunlerListesi = snapshot.docs.map((doc) {
                 return Urunler.fromMap(doc.data(), docId: doc.id);
               }).toList();
               urunListesi.value = urunlerListesi;
+              favoriListe.value = favoriler;
             });
       }
     } on Exception catch (e) {
@@ -260,7 +270,6 @@ class ProductController extends BaseController {
             .get();
 
         if (querySnapshot.docs.isNotEmpty) {
-          print("Bu ürün zaten mevcut");
         } else {
           final newDocRef = db
               .collection("users")
@@ -317,7 +326,6 @@ class ProductController extends BaseController {
     final ownerUid = await bringOwnerUid();
 
     final urun = urunListesi.firstWhereOrNull((e) => e.urun_id == urunID);
-    print(urun);
 
     if (urun != null) {
       await db

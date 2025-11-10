@@ -30,7 +30,9 @@ class SignupPage extends GetView<SignupController> {
                       () => Column(
                         children: [
                           Visibility(
-                            visible: controller.personal.value,
+                            visible:
+                                controller.personal.value &&
+                                !controller.isWindows(),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -40,7 +42,7 @@ class SignupPage extends GetView<SignupController> {
                                       labelText: "Dükkan QR Code",
                                     ),
                                     controller: controller.uidController,
-                                    readOnly: true,
+                                    readOnly: !controller.isWindows(),
                                     obscureText: true,
                                     showCursor: false,
                                   ),
@@ -141,21 +143,25 @@ class SignupPage extends GetView<SignupController> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Visibility(
-                                visible: !controller.owner.value,
-                                child: OutlinedButton.icon(
-                                  onPressed: () async {
-                                    if (!controller.personal.value) {
-                                      controller.personal.value = true;
-                                      controller.owner.value = false;
-                                    } else if (controller.personal.value) {
-                                      await controller.personalSignUp();
+                              Obx(
+                                () => Visibility(
+                                  visible:
+                                      !controller.owner.value &&
+                                      controller.isWindowsOwnerUidSet.value,
+                                  child: OutlinedButton.icon(
+                                    onPressed: () async {
+                                      if (!controller.personal.value) {
+                                        controller.personal.value = true;
+                                        controller.owner.value = false;
+                                      } else if (controller.personal.value) {
+                                        await controller.personalSignUp();
 
-                                      // Eğer kayıt başarılıysa, PendingApprovalPage’e yönlendir
-                                    }
-                                  },
-                                  label: const Text("Personel Kayıt"),
-                                  icon: Icon(Icons.person_2_outlined),
+                                        // Eğer kayıt başarılıysa, PendingApprovalPage’e yönlendir
+                                      }
+                                    },
+                                    label: const Text("Personel Kayıt"),
+                                    icon: Icon(Icons.person_2_outlined),
+                                  ),
                                 ),
                               ),
                               SizedBox(width: 15),

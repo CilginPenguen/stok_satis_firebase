@@ -11,16 +11,20 @@ import 'themes/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   if (!kIsWeb &&
       (defaultTargetPlatform == TargetPlatform.windows ||
           defaultTargetPlatform == TargetPlatform.linux)) {
-    // FFI init
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   }
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform, // BURAYI EKLE
-  );
+
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // 🔹 AppBindings'i manuel initialize ediyoruz
+  final appBindings = AppBindings();
+  await appBindings.dependencies(); // tüm controller ve servisler hazır
+
   runApp(const MyApp());
 }
 
@@ -34,7 +38,7 @@ class MyApp extends StatelessWidget {
       getPages: AppPages.pages,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      initialBinding: AppBindings(),
+      // ❌ initialBinding gerekmez çünkü biz zaten elle bekledik
       initialRoute: AppRoutes.initial,
     );
   }
