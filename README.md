@@ -60,6 +60,9 @@ lib/
 Masaüstü Giriş Sayfası
 <img width="1333" height="759" alt="image" src="https://github.com/user-attachments/assets/7926de6f-91c3-4cff-ac51-5969541c8647" />
 Masaüstü Kayıt Sayfası
+<img width="1838" height="1137" alt="image" src="https://github.com/user-attachments/assets/41a01f27-6249-4192-8967-b972cee10611" />
+Dükkan Sahibi telefonundaki uygulama üzerinden personelinin uygulamaya erişimini kontrol edebilir.
+
 <img width="1838" height="1134" alt="image" src="https://github.com/user-attachments/assets/97cebc1c-f020-49b9-8128-6d9eb1d74520" />
 Giriş Yapılmış Kullanıcı Ana Sayfası
 => Bu Sayfada Kullanıcı, fiziksel barkod okuyucusuyla kaydırmalı butonları aktifleştirmediği taktirde hiçbir işlem yapılmayıp kaydırmalı butonlardan herhangi bir butonu aktifleştirdiği seçeneğe bağlı olarak işlem yapmaktadır.Sol tarafta bulunan seçeneklerden kullanıcı yapmak istediği işlem hakkındaki sayfaya yönlendirmeler bulunmaktadır.Personel olarak giriş yapıldığı durumda yandaki bulunan yönlendirmeler, personelin yetkisi bulunduğu sürece sayfayı açmaktadır. Yetkisi bulunmadığı sayfaya gitmek istediği taktirde karşısına dinamik alanda "Yetkiniz Bulunmamaktadır" bilgilendirmesi aktarılmaktadır.
