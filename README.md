@@ -56,7 +56,14 @@ lib/
 ---
 
 ## 📸 Ekran Görüntüleri
-<img width="1330" height="755" alt="image" src="https://github.com/user-attachments/assets/d46d4e3e-0445-4d10-a34b-95e415ad971e" />
+<img width="1330" height="755" alt="image" src="https://github.com/user-attachments/assets/d46d4e3e-0445-4d10-a34b-95e415ad971e" /> 
+Masaüstü Giriş Sayfası
+<img width="1333" height="759" alt="image" src="https://github.com/user-attachments/assets/7926de6f-91c3-4cff-ac51-5969541c8647" />
+Masaüstü Kayıt Sayfası
+<img width="1838" height="1134" alt="image" src="https://github.com/user-attachments/assets/97cebc1c-f020-49b9-8128-6d9eb1d74520" />
+Giriş Yapılmış Kullanıcı Ana Sayfası
+
+
 
 
 ---
