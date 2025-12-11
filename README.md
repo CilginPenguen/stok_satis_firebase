@@ -56,6 +56,7 @@ lib/
 ---
 
 ## 📸 Ekran Görüntüleri
+<img width="1330" height="755" alt="image" src="https://github.com/user-attachments/assets/d46d4e3e-0445-4d10-a34b-95e415ad971e" />
 
 
 ---
