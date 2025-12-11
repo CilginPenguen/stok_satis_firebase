@@ -57,9 +57,17 @@ lib/
 
 ## 📸 Ekran Görüntüleri
 <img width="1330" height="755" alt="image" src="https://github.com/user-attachments/assets/d46d4e3e-0445-4d10-a34b-95e415ad971e" /> 
-Masaüstü Giriş Sayfası
+Masaüstü Giriş Sayfası 
 <img width="1333" height="759" alt="image" src="https://github.com/user-attachments/assets/7926de6f-91c3-4cff-ac51-5969541c8647" />
 Masaüstü Kayıt Sayfası
+NOT=> Masaüstü uygulamasında Dükkan Sahibi Kayıt veya Giriş yapmadığı sürece personelin giriş ve kayıt işlemleri yapılamamaktadır.
+<img width="1839" height="1128" alt="image" src="https://github.com/user-attachments/assets/7fc4658f-aaa1-4cb3-a8fd-03a6bde4aa7d" />
+Dükkan Sahibinin Kayıt Oluşumu
+<img width="1844" height="1132" alt="image" src="https://github.com/user-attachments/assets/a2b46759-9601-48b4-801f-f06d5d243ec3" />
+Dükkan Sahibi olarak kayıt yapıldığında kişinin uygulama ile paylaşmış olduğu Mail adresine doğrulama linki yollanmaktadır. Bu arayüzde Dükkan Sahibi ihtiyaç duyduğu işlemleri yapabilmektedir.Dükkan Sahibi mailine gelmiş olan mail linkine tıkladıktan sonra Mail adresini doğrulamış olduktan sonra uygulamanın arayüzünden kontrol işlemi sonrası Kullanıcı Arayüzüne ulaşabilir.
+<img width="1838" height="1126" alt="image" src="https://github.com/user-attachments/assets/f8de4b35-428a-4292-89c8-827b750d96c7" />
+Personel telefondan veya bilgisayardan kayıt olduğunda Dükkan Sahibi tarafından onaylanmasını beklemektedir.
+NOT:Her personel tek cihaza tanımlıdır. Personel giriş yaptığı cihaz haricinde giriş yapamamaktadır.
 <img width="1838" height="1137" alt="image" src="https://github.com/user-attachments/assets/41a01f27-6249-4192-8967-b972cee10611" />
 Dükkan Sahibi telefonundaki uygulama üzerinden personelinin uygulamaya erişimini kontrol edebilir.
 
