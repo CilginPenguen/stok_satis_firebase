@@ -62,6 +62,11 @@ Masaüstü Giriş Sayfası
 Masaüstü Kayıt Sayfası
 <img width="1838" height="1134" alt="image" src="https://github.com/user-attachments/assets/97cebc1c-f020-49b9-8128-6d9eb1d74520" />
 Giriş Yapılmış Kullanıcı Ana Sayfası
+=> Bu Sayfada Kullanıcı, fiziksel barkod okuyucusuyla kaydırmalı butonları aktifleştirmediği taktirde hiçbir işlem yapılmayıp kaydırmalı butonlardan herhangi bir butonu aktifleştirdiği seçeneğe bağlı olarak işlem yapmaktadır.Sol tarafta bulunan seçeneklerden kullanıcı yapmak istediği işlem hakkındaki sayfaya yönlendirmeler bulunmaktadır.Personel olarak giriş yapıldığı durumda yandaki bulunan yönlendirmeler, personelin yetkisi bulunduğu sürece sayfayı açmaktadır. Yetkisi bulunmadığı sayfaya gitmek istediği taktirde karşısına dinamik alanda "Yetkiniz Bulunmamaktadır" bilgilendirmesi aktarılmaktadır.
+<img width="1842" height="1130" alt="image" src="https://github.com/user-attachments/assets/d0f841f2-6235-4516-b3f7-146b24f1f914" />
+<img width="1841" height="1127" alt="image" src="https://github.com/user-attachments/assets/fa594084-a006-42db-b501-cce4088889d9" />
+
+
 
 
 
