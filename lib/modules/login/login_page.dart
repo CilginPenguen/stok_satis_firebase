@@ -141,12 +141,32 @@ class LoginPage extends GetView<LoginController> {
                                 Cancel(visible: controller.personal),
                               ],
                             ),
-                            TextButton(
-                              onPressed: () =>
-                                  Get.offAllNamed(AppRoutes.signUp),
-                              child: const Text(
-                                "Henüz Kayıt Olmadıysanız Tıklayınız",
-                                style: TextStyle(color: Colors.red),
+
+                            Obx(
+                              () => Visibility(
+                                visible:
+                                    controller.owner.value == false &&
+                                    controller.personal.value == false,
+                                child: Column(
+                                  children: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Get.offAllNamed(AppRoutes.signUp),
+                                      child: const Text(
+                                        "Henüz Kayıt Olmadıysanız Tıklayınız",
+                                        style: TextStyle(color: Colors.red),
+                                      ),
+                                    ),
+                                    OutlinedButton.icon(
+                                      onPressed: () {},
+                                      label: Text("Şifremi Unuttum"),
+                                      icon: Icon(Icons.password_rounded),
+                                      style: OutlinedButton.styleFrom(
+                                        side: BorderSide(color: Colors.red),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ],

@@ -213,8 +213,11 @@ class SignupController extends BaseController {
       final refreshedUser = FirebaseAuth.instance.currentUser;
 
       if (refreshedUser != null && refreshedUser.emailVerified) {
-        // AuthGate yönlendirecek
-        Get.offAllNamed(AppRoutes.home);
+        if (isWindows()) {
+          Get.offAllNamed(AppRoutes.desktop);
+        } else {
+          Get.offAllNamed(AppRoutes.home);
+        }
         return;
       } else {
         Get.snackbar("Onay Durumu", "Henüz Doğrulanmadı");

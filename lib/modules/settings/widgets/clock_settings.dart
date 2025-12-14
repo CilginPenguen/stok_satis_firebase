@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:stok_satis_firebase/core/base_controller.dart';
 
 import '../../../services/clock_service.dart';
 
-class ClockSettings extends StatelessWidget {
+class ClockSettings extends GetView<BaseController> {
   ClockSettings({super.key});
 
   final ClockService clockService = Get.find<ClockService>();
@@ -11,13 +12,16 @@ class ClockSettings extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: ListTile(
-        leading: Icon(Icons.lock_clock),
-        title: Text('Saati Göster'),
-        trailing: Obx(
-          () => Switch(
-            value: clockService.clockMode,
-            onChanged: (value) => clockService.toggleClock(),
+      child: Visibility(
+        visible: !controller.isWindows(),
+        child: ListTile(
+          leading: Icon(Icons.lock_clock),
+          title: Text('Saati Göster'),
+          trailing: Obx(
+            () => Switch(
+              value: clockService.clockMode,
+              onChanged: (value) => clockService.toggleClock(),
+            ),
           ),
         ),
       ),

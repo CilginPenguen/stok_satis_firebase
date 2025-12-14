@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:stok_satis_firebase/routes/app_pages.dart';
 
 import '../../services/clock_service.dart';
-import '../../themes/app_colors.dart';
+import '../../utils/themes/app_colors.dart';
 import '../history/history_controller.dart';
 import 'dashboard_controller.dart';
 import 'widgets/analog_saat.dart';

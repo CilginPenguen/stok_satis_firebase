@@ -82,7 +82,7 @@ class DesktopPage extends GetView<DesktopController> {
           IconButton(
             onPressed: () async {
               await controller.signOut();
-              Get.offAllNamed(AppRoutes.auth);
+              Get.offAllNamed(AppRoutes.login);
             },
             icon: const Icon(Icons.exit_to_app),
           ),

@@ -90,7 +90,7 @@ class PersonalWaitingApproval extends GetView<SignupController> {
             Future.microtask(() => Get.offAll(const RejectedPage()));
           }
 
-          return const Center(
+          return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -98,6 +98,16 @@ class PersonalWaitingApproval extends GetView<SignupController> {
                 SizedBox(height: 20),
                 Text(
                   "Kaydınız dükkan sahibi tarafından onaylanmayı bekliyor...",
+                ),
+                OutlinedButton.icon(
+                  onPressed: () {
+                    Get.offAllNamed(AppRoutes.login);
+                  },
+                  label: Text("Çıkış Yap"),
+                  icon: Icon(Icons.exit_to_app),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: Colors.red),
+                  ),
                 ),
               ],
             ),

@@ -2,7 +2,7 @@ import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.da
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../themes/app_colors.dart';
+import '../../../utils/themes/app_colors.dart';
 import '../home_controller.dart';
 import 'index_menu.dart';
 

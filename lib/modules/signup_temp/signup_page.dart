@@ -168,11 +168,31 @@ class SignupPage extends GetView<SignupController> {
                               SignupCancel(visible: controller.personal),
                             ],
                           ),
-                          TextButton(
-                            onPressed: () => Get.offAllNamed(AppRoutes.login),
-                            child: Text(
-                              "Kayıtlıysanız Buraya Tıklayınız",
-                              style: TextStyle(color: Colors.red),
+                          Obx(
+                            () => Visibility(
+                              visible:
+                                  controller.owner.value == false &&
+                                  controller.personal.value == false,
+                              child: Column(
+                                children: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Get.offAllNamed(AppRoutes.login),
+                                    child: const Text(
+                                      "Kayıtlıysanız Buraya Tıklayınız",
+                                      style: TextStyle(color: Colors.red),
+                                    ),
+                                  ),
+                                  OutlinedButton.icon(
+                                    onPressed: () {},
+                                    label: Text("Şifremi Unuttum"),
+                                    icon: Icon(Icons.password_rounded),
+                                    style: OutlinedButton.styleFrom(
+                                      side: BorderSide(color: Colors.red),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],

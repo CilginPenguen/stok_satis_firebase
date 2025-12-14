@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:stok_satis_firebase/modules/desktop/desktop_page.dart';
 import 'package:stok_satis_firebase/modules/signup_temp/personal/personal_can_login.dart';
 import 'package:stok_satis_firebase/routes/app_pages.dart';
@@ -16,7 +15,7 @@ import '../modules/home/home_page.dart';
 import '../modules/products/product_controller.dart';
 import '../modules/signup_temp/personal/personal_reject.dart';
 import '../modules/signup_temp/personal/personal_waiting_approval.dart';
-import '../themes/app_colors.dart';
+import '../utils/themes/app_colors.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'dart:io';
 

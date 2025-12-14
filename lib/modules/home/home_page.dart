@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:stok_satis_firebase/modules/products/widgets/Product/product_floatAction.dart';
 
 import '../../routes/app_pages.dart';
-import '../../themes/app_colors.dart';
+import '../../utils/themes/app_colors.dart';
 import 'home_controller.dart';
 import 'widgets/BotNavBar.dart';
 

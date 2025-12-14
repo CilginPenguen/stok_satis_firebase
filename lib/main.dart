@@ -7,7 +7,13 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'core/app_bindings.dart';
 import 'firebase_options.dart';
 import 'routes/app_pages.dart';
-import 'themes/app_theme.dart';
+import 'utils/themes/app_theme.dart';
+
+// translations
+import 'utils/translations/app_translations.dart';
+
+// storage service
+import 'services/storage_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,15 +27,41 @@ void main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // 🔹 AppBindings'i manuel initialize ediyoruz
   final appBindings = AppBindings();
-  await appBindings.dependencies(); // tüm controller ve servisler hazır
+  await appBindings.dependencies();
 
-  runApp(const MyApp());
+  // StorageService init ve register
+  final storageService = await StorageService().init();
+  Get.put<StorageService>(storageService, permanent: true);
+
+  // --- Locale yükleme: önce storage sonra sistem dili ---
+  Locale initialLocale = _loadInitialLocale(storageService);
+
+  runApp(MyApp(initialLocale: initialLocale));
+}
+
+Locale _loadInitialLocale(StorageService storageService) {
+  final saved = storageService.getValue<String>(StorageKeys.locale);
+  if (saved != null && saved.isNotEmpty) {
+    final parts = saved.split('_'); // 
+    return Locale(parts[0], parts[1]);
+  }
+
+  // storage'da kayıt yoksa cihazın sistem dilini kullan
+  try {
+    // Flutter 3.7+ recommended access:
+    final platformLocale = WidgetsBinding.instance.platformDispatcher.locale;
+    if (platformLocale != null) return platformLocale;
+  } catch (_) {
+    // fallback
+  }
+
+  return const Locale('tr', 'TR'); // kesinlikle fallback
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final Locale? initialLocale;
+  const MyApp({super.key, this.initialLocale});
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +70,11 @@ class MyApp extends StatelessWidget {
       getPages: AppPages.pages,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      // ❌ initialBinding gerekmez çünkü biz zaten elle bekledik
+
+      translations: AppTranslations(),
+      locale: initialLocale,
+      fallbackLocale: const Locale('en', 'US'),
+
       initialRoute: AppRoutes.initial,
     );
   }

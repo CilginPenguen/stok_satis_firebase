@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../themes/app_colors.dart';
+import '../../utils/themes/app_colors.dart';
 import '../products/products_V2.dart';
 import '../products/widgets/Product/barcode_scanner.dart';
 import 'basket_controller.dart';

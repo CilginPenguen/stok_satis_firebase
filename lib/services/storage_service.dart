@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 abstract class StorageKeys {
   static const String themeMode = 'theme_mode';
   static const String clockCheck = "clock";
+  static const String locale = 'locale';
 }
 
 class StorageService extends GetxController {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:stok_satis_firebase/modules/settings/widgets/clock_settings.dart';
+import 'package:stok_satis_firebase/modules/settings/widgets/language_settings.dart';
 import 'package:stok_satis_firebase/modules/settings/widgets/profile_button.dart';
 import 'package:stok_satis_firebase/modules/settings/widgets/theme_settings.dart';
 
